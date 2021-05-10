@@ -28,10 +28,10 @@ class TwitterMiner(object):
             if last_twitter_id:
                 timeline_result = self.api.user_timeline(user_id=user_id, count=self.result_limit,
                                                          max_id=last_twitter_id - 1, tweet_model='extended',
-                                                         include_retweets=False)
+                                                         include_rts=False)
             else:
                 timeline_result = self.api.user_timeline(user_id=user_id, count=self.result_limit,
-                                                         tweet_mode='extended', include_retweets=False)
+                                                         tweet_mode='extended', include_rts=False)
 
             for timeline_tweet in timeline_result:
                 mined_timeline_twitter = timeline_tweet._json

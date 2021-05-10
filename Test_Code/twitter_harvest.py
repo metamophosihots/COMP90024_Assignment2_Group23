@@ -1,10 +1,20 @@
+import tweepy.error
 import twitter_miner
 import time
 from copy import deepcopy
 import json
+import couchdb
+
+
+def sendDataToCouchDB(login_url, database, tweets):
+    couch = couchdb.Server(login_url)
+    db = couch[database]
+    for each_twitter in tweets:
+        db.save(each_twitter)
+
 
 # read configuration from the config json file
-with open('config.json') as file:
+with open('config_harvest.json') as file:
     config = json.load(file)
 
 # set up miner to harvest tweets
@@ -21,13 +31,18 @@ for city in city_list:
     city_geocode_dict[city['city_name']] = city['geo_code']
     location_list = location_list + city['location']
 
+# Adelaide: -34.8917,138.6033,16km
+# Perth: -32.0117,115.3986,60km
+# Sydney: -33.8917,151.0708,20km
+# Brisbane: -27.5125,153.0136,32km
+
+
 # set up the corresponding database log in info
 login_info = config['couchdb_info']['login_url']
 database_name = config['couchdb_info']['database_name']
 
 # complement food list to a full list, here we test with pizza and burger
 food_keyword = ['pizza', 'burger']
-
 
 # get the original twitters
 search_tweets_list = []
@@ -80,20 +95,32 @@ while harvest_round <= max_harvest_round:
     timeline_search_index = 0
     timeline_tweets = []
     while timeline_search_index < len(followers_harvest_list):
-        mined_timeline_tweets = miner.mineUserTimeline(followers_harvest_list[timeline_search_index], 5)
-        timeline_tweets = timeline_tweets + mined_timeline_tweets
-        timeline_search_index += 1
+        try:
+            mined_timeline_tweets = miner.mineUserTimeline(followers_harvest_list[timeline_search_index], 1)
+            timeline_tweets = timeline_tweets + mined_timeline_tweets
+            timeline_search_index += 1
+        except tweepy.error.TweepError:
+            timeline_search_index += 1
+
         if timeline_search_index % 1500 == 0:
+            '''
             # send the timeline tweets to the couchdb
+            sendDataToCouchDB(login_info, database_name, timeline_tweets)
+            timeline_tweets = []
+            '''
             time.sleep(900)
 
+    '''
     # send the remaining tweets to the couchdb
-
+    # sendDataToCouchDB(login_info, database_name, timeline_tweets)
+    '''
 
     # test code store the mined tweets
-    jsonStr = json.dumps(timeline_tweets)
-    with open('tweets_mined') as output:
-        json.dump(jsonStr, output)
+    data = {'tweets': []}
+    with open('tweets_mined.json', 'w') as output:
+        for twitter in timeline_tweets:
+            data['tweets'].append(twitter)
+        json.dump(data, output)
     # test code store the mined tweets
 
     harvest_round += 1
