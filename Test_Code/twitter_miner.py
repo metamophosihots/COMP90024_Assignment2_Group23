@@ -43,6 +43,8 @@ class TwitterMiner(object):
                     'user_name': mined_timeline_twitter['user']['screen_name'],
                     'location': mined_timeline_twitter['user']['location'],
                     "retweet_count": mined_timeline_twitter['retweet_count'],
+                    'favorite_count': mined_timeline_twitter['favorite_count'],
+                    'coordinates': mined_timeline_twitter['coordinates'],
                     'obtain_method': 'timeline_mine'
                 }
                 try:
