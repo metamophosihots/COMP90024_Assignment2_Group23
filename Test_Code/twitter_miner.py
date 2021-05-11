@@ -1,5 +1,5 @@
 import tweepy
-
+import re
 
 class TwitterMiner(object):
     result_limit = 0
@@ -36,8 +36,8 @@ class TwitterMiner(object):
             for timeline_tweet in timeline_result:
                 mined_timeline_twitter = timeline_tweet._json
                 mined_twitter = {
+                    '_id': str(mined_timeline_twitter['id']),
                     'created_at': mined_timeline_twitter['created_at'],
-                    'tweet_id': mined_timeline_twitter['id'],
                     'source_device': mined_timeline_twitter['source'],
                     'user_id': mined_timeline_twitter['user']['id'],
                     'user_name': mined_timeline_twitter['user']['screen_name'],
@@ -51,7 +51,7 @@ class TwitterMiner(object):
                     mined_twitter['text'] = mined_timeline_twitter['full_text']
                 except KeyError:
                     mined_twitter['text'] = mined_timeline_twitter['text']
-                last_twitter_id = mined_twitter['tweet_id']
+                last_twitter_id = mined_twitter['_id']
                 twitter_list.append(mined_twitter)
             page += 1
 
@@ -59,8 +59,13 @@ class TwitterMiner(object):
 
     def mineUserFollowers(self, user_id):
         follower_list = self.api.followers_ids(user_id=user_id, count=10)
-        follower_list = list(set(follower_list))
-        return follower_list
+        melb_follower_list = []
+        for id in follower_list:
+            location = self.getUserProfile(user_id=id)
+            if re.search('melbourne', location.lower()):
+                melb_follower_list.append(id)
+        #follower_list = list(set(follower_list))
+        return melb_follower_list
 
     def mineSearchTweets(self, food_name, geo_code):
         twitter_list = []
@@ -81,6 +86,7 @@ class TwitterMiner(object):
                     'tweet_id': twitter['id'],
                     'user_id': twitter['user']['id'],
                     'user_name': twitter['user']['screen_name'],
+                    'user_location': twitter['user']['location'],
                     'created_at': twitter['created_at'],
                     'source': twitter['source'],
                 }
