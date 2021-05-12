@@ -4,21 +4,13 @@ import time
 import json
 import couchdb
 import re
+import textblob
 
 
 def sendDataToCouchDB(database, tweets):
     for tweet in tweets:
         if tweet["_id"] not in database:
             database.save(tweet)
-
-
-# connect to different database in couchdb. If already exist, connect, otherwise create a new database to connect
-def connect_db(db_name, couch):
-    if db_name in couch:
-        db = couch[db_name]
-    else:
-        db = couch.create(db_name)
-    return db
 
 
 # transfer user location to one of the cities in interest
@@ -83,27 +75,11 @@ twitter_db_name = config['couchdb_info']['database_name'][1]
 
 # connect to couchdb
 couch = couchdb.Server(login_info)
-user_db = connect_db(user_db_name, couch)
-twitter_db = connect_db(twitter_db_name, couch)
-
-
-
-
-# this part need to be reworked after new implementation
-view_melb_user = {'melb': {'map': 'function (doc) {\n  if(doc.location == "Melbourne" && doc.timeline_extracted == "0")\n  emit(doc._id, doc.from_stream);\n}'}}
-# you may have to write several view of users for Adelaide, Perth.....
-create_view(user_db, 'by_city', view_melb_user)
-# this part need to be reworked after new implementation
-
-
-
-
+user_db = couch[user_db_name]
+twitter_db = couch[twitter_db_name]
 
 # complement food list to a full list, here we test with pizza and burger
 food_keyword = ['pizza', 'burger']
-
-
-# so this part is not useful anymore, we get all users id from stream api?
 
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
