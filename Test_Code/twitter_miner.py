@@ -1,6 +1,7 @@
 import tweepy
 import re
 
+
 class TwitterMiner(object):
     result_limit = 0
     data = []
@@ -19,6 +20,7 @@ class TwitterMiner(object):
         self.api = tweepy.API(auth)
         self.result_limit = limit
 
+    # need to rewrite
     def mineUserTimeline(self, user_id, max_pages):
         twitter_list = []
         last_twitter_id = False
@@ -57,17 +59,18 @@ class TwitterMiner(object):
 
         return twitter_list
 
-    def mineUserFollowers(self, user_id):
+    def mineUserFollowers(self, user_id, city_name_list):
         follower_list = self.api.followers_ids(user_id=user_id, count=10)
-        melb_follower_list = []
-        # may be we have to set up a big list for several cities
-        for id in follower_list:
-            location = self.getUserProfile(user_id=id)
-            # this part need to be re-written
-            if re.search('melbourne', location.lower()):
-                melb_follower_list.append(id)
-        # follower_list = list(set(follower_list))
-        return melb_follower_list
+        valid_follower_list = []
+        for each_follower_id in follower_list:
+            location = self.getUserProfile(user_id=each_follower_id)
+            if location is None:
+                continue
+            else:
+                for each_city in city_name_list:
+                    if re.search(each_city, location):
+                        valid_follower_list.append(id)
+        return valid_follower_list
 
     def mineSearchTweets(self, food_name, geo_code):
         twitter_list = []
@@ -100,4 +103,4 @@ class TwitterMiner(object):
 
     def getUserProfile(self, user_id):
         user = self.api.get_user(user_id=user_id)
-        return user.location
+        return user['location']

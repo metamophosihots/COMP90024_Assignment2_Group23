@@ -13,7 +13,7 @@ with open('config_stream.json') as file:
 account_info = config['account_info']
 auth = tweepy.OAuthHandler(account_info['consumer_key'], account_info['consumer_secret_key'])
 auth.set_access_token(account_info['access_token'], account_info['access_token_secret'])
-api_stream = tweepy.API(auth)
+api = tweepy.API(auth)
 
 # set up city list and geo code to search
 bounding_box_coordinates = config['bounding_box']
@@ -62,42 +62,58 @@ class ProjectStreamListener(tweepy.StreamListener):
         self.tweets_list = []
 
 
+# transfer user location to one of the cities in interest
+# if use is not in the city list, return empty string
+
+def location_to_city(user_location, city_name_list):
+    location = ""
+    for city in city_name_list:
+        if re.search(city.lower(), user_location.lower()):
+            location = city
+    return location
+
+
 # bound time could be changed to satisfy demand
-bound_time = datetime.time(21, 57, 0, 0)
+bound_time = datetime.time(23, 45, 0, 0)
+start_time = datetime.time(21, 0, 0, 0)
+city_name_list = ['Melbourne', 'Sydney', 'Brisbane', 'Perth', 'Adelaide']
 project_stream_listener = ProjectStreamListener(bound_time)
-project_stream = tweepy.Stream(auth=api_stream.auth, listener=project_stream_listener)
+project_stream = tweepy.Stream(auth=api.auth, listener=project_stream_listener)
 
 
 while True:
-    if datetime.datetime.now().time().__ge__(bound_time):
-        time.sleep(1800)
-    else:
-        project_stream.filter(track=food_keyword, locations=bounding_box_coordinates)
-        processed_tweets = {}
-        for each_twitter in project_stream_listener.tweets_list:
-            processed_tweets[str(each_twitter['id'])] = {
-                'user_id': each_twitter['user']['id'],
-                'location': each_twitter['user']['location'],
-                'obtain_method': 'stream'
-            }
-        for tweet_id_key in processed_tweets.keys():
-            user_location = processed_tweets[tweet_id_key]['location']
-            if user_location is not None:
-                for city in city_list:
-                    if re.search(city, user_location):
-                        processed_tweets[tweet_id_key]['location'] = city
+    while datetime.datetime.now().time().__le__(start_time):
+        time.sleep(900)
+        # ask couch db for user_file, amount is 900 users
+        check_profile_user_list = [1, 2]
+        # ask couch db for user_file, amount is 900 users
+        for each_user in check_profile_user_list:
+            user_profile = api.get_user(each_user["_id"])
+            if user_profile['location'] is None:
+                continue
+            else:
+                user_location = location_to_city(user_profile['location'], city_name_list)
+                if user_location is not None:
+                    # maybe need to delete it from the couchdb
 
-        '''
-        # send data to couchdb
-        # it should be sent to user database now
-        couch = couchdb.Server(login_info)
-        db = couch[database_name]
-        for each_twitter in project_stream_listener.tweets_list:
-        db.save(each_twitter)
-        # send data to couchdb
-        '''
 
-        '''
-        project_stream_listener.clear_tweets_dict()
-        time.sleep(1800)
-        '''
+    while datetime.datetime.now().time().__ge__(start_time):
+        if datetime.datetime.now().time().__ge__(bound_time):
+            time.sleep(900)
+        else:
+            project_stream.filter(track=food_keyword, locations=bounding_box_coordinates)
+            processed_tweets = []
+            for each_twitter in project_stream_listener.tweets_list:
+                processed_twitter = {
+                    "_id": str(each_twitter["id"]),
+                    'user_id': each_twitter['user']['id'],
+                    'location': each_twitter['user']['location']
+                }
+                processed_tweets.append(processed_twitter)
+            for tweets in processed_tweets:
+                user_id = tweets['user_id']
+                location = location_to_city(tweets['user_location'], city_name_list)
+                if str(user_id) not in user_db and location is not None:
+                    follower_dic = {"_id": str(user_id), "location": location, "location_confirmed": "1",
+                                    "timeline_extracted": "0", "round_number": "0"}
+                    user_db.save(follower_dic)
