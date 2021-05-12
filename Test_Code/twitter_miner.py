@@ -60,11 +60,13 @@ class TwitterMiner(object):
     def mineUserFollowers(self, user_id):
         follower_list = self.api.followers_ids(user_id=user_id, count=10)
         melb_follower_list = []
+        # may be we have to set up a big list for several cities
         for id in follower_list:
             location = self.getUserProfile(user_id=id)
+            # this part need to be re-written
             if re.search('melbourne', location.lower()):
                 melb_follower_list.append(id)
-        #follower_list = list(set(follower_list))
+        # follower_list = list(set(follower_list))
         return melb_follower_list
 
     def mineSearchTweets(self, food_name, geo_code):

@@ -7,13 +7,15 @@ import couchdb
 import re
 import textblob
 
+
 def sendDataToCouchDB(database, tweets):
     for tweet in tweets:
+        # tweet attribute is '_id' not 'id'?
         if tweet["_id"] not in database:
             database.save(tweet)
 
 
-# connect to different database in couchdb. If already exist, connect, otherwise create a new databse to connect
+# connect to different database in couchdb. If already exist, connect, otherwise create a new database to connect
 def connect_db(db_name, couch):
     if db_name in couch:
         db = couch[db_name]
@@ -30,6 +32,7 @@ def location_to_city(user_location, city_name_list):
         if re.search(city, user_location):
             location = city
     return location
+
 
 # this function writes the view document and store into the database
 def create_view(database, doc_name, view_dic):
@@ -51,7 +54,6 @@ def create_view(database, doc_name, view_dic):
         }
         # logging.info( f"creating view {design_doc}/{view_name}" )
         database.save(view)
-
 
 
 # read configuration from the config json file
@@ -89,10 +91,14 @@ twitter_db = connect_db(twitter_db_name, couch)
 
 # create view to view userid from melbourne (to be moved to DBhelper class later)
 view_melb_user = {'melb': {'map': 'function (doc) {\n  if(doc.location == "Melbourne" && doc.timeline_extracted == "0")\n  emit(doc._id, doc.from_stream);\n}'}}
+# you may have to write several view of users for Adelaide, Perth.....
 create_view(user_db, 'by_city', view_melb_user)
 
 # complement food list to a full list, here we test with pizza and burger
 food_keyword = ['pizza', 'burger']
+
+
+# so this part is not useful anymore, we get all users id from stream api?
 """
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
@@ -116,32 +122,30 @@ for twitter in search_tweets_list:
 #search_id_list = deepcopy(author_id_list)
 """
 
-
+# This part may need to be re-writen for multi-cities and this should be in a while loop
 user_melb_list = user_db.view('by_city/melb', limit=15)
 search_id_list = []
 for row in user_melb_list:
     search_id_list.append(int(row.key))
-#print(search_id_list)
+# print(search_id_list)
 
-# start tweets harvest using timeline and author's followers
+# start tweets harvest using author's followers with their timelines
 harvest_round = 1
 max_harvest_round = 1
 # final max round should be 2
-while harvest_round <= max_harvest_round:
 
-    followers_harvest_list = []
-    follower_index = 0
-    while follower_index < len(search_id_list):
-        mined_followers_list = miner.mineUserFollowers(search_id_list[follower_index])
+while harvest_round <= max_harvest_round:
+    search_index = 0
+    while search_index < len(search_id_list):
+        mined_followers_list = miner.mineUserFollowers(search_id_list[search_index])
         if len(mined_followers_list) > 0:
             for follower in mined_followers_list:
                 if str(follower) not in user_db:
                     follower_dic = {"_id": str(follower), "location": "Melbourne", "from_stream": "0", "timeline_extracted": "0"}
                     user_db.save(follower_dic)
-        follower_index += 1
-
-        #followers_harvest_list = followers_harvest_list + mined_followers_list
-        if (follower_index % 5) == 0:
+        search_index += 1
+        # followers_harvest_list = followers_harvest_list + mined_followers_list
+        if (search_index % 15) == 0:
             time.sleep(900)
 
     """
@@ -151,6 +155,8 @@ while harvest_round <= max_harvest_round:
         if searched_account in author_id_list:
             search_id_list.remove(searched_account)
 
+
+    # If you are going to choose this method, this part is essential, because we are going to use several cities, not one
     # check user location
     follower_search_count = 0
     for follower_id in followers_harvest_list:
@@ -166,7 +172,8 @@ while harvest_round <= max_harvest_round:
     # check user status, if he activate geo_coordinates
 
     search_id_list = deepcopy(followers_harvest_list)
-    author_id_list = author_id_list + followers_harvest_list"""
+    author_id_list = author_id_list + followers_harvest_list
+    """
 
     timeline_search_index = 0
     timeline_tweets = []
@@ -179,14 +186,10 @@ while harvest_round <= max_harvest_round:
             timeline_search_index += 1
 
         if timeline_search_index % 1500 == 0:
-
             # send the timeline tweets to the couchdb
             sendDataToCouchDB(twitter_db, timeline_tweets)
             timeline_tweets = []
-
             time.sleep(900)
-
-
 
     # change the user_ids that has been searched to status 1
     for id in search_id_list:
