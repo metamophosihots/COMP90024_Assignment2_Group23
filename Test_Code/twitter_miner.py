@@ -90,10 +90,10 @@ class TwitterMiner(object):
                 searched_twitter = {
                     'tweet_id': twitter['id'],
                     'user_id': twitter['user']['id'],
-                    'user_name': twitter['user']['screen_name'],
+                    #'user_name': twitter['user']['screen_name'],
                     'user_location': twitter['user']['location'],
-                    'created_at': twitter['created_at'],
-                    'source': twitter['source'],
+                    #'created_at': twitter['created_at'],
+                    #'source': twitter['source'],
                 }
                 last_twitter_id = searched_twitter['tweet_id']
                 twitter_list.append(searched_twitter)

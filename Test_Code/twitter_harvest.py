@@ -45,6 +45,8 @@ def create_view(database, doc_name, view_dic):
         database.save(view)
 
 
+INSTANCE = '1'
+
 # read configuration from the config json file
 with open('config_harvest.json') as file:
     config = json.load(file)
@@ -88,14 +90,14 @@ for food_name in food_keyword:
     for city_name in city_name_list:
         search_tweets_list = search_tweets_list + miner.mineSearchTweets(food_name, city_geocode_dict[city_name])
 
-# get the original twitters' author and deduplicate
+# get the original twitters' author and check location
 one_user = {}
 for twitter in search_tweets_list:
     location = location_to_city(twitter['user_location'], city_name_list)
-    if location is not None:
+    if not location == "":
         user_id = str(twitter['user_id'])
-        one_user = {'_id': user_id, 'location': location,
-                    'location_confirmed': "1", 'timeline_extracted': '0', 'round_number': 0}
+        one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
+                    "follower_extracted": "0", "instance": INSTANCE, 'rank': 0}
         if user_id not in user_db:
             user_db.save(one_user)
 time.sleep(300)

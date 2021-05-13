@@ -5,10 +5,14 @@ import couchdb
 """
 sample of user document in couchdb:
 {"_id": str,
-"location": string of one of five cities
-"timeline_extract": string: 0 or 1
-"priority": string: 0 or 1 or 2 (maybe change another name other than priority)
+"location": string of one of five cities #only have this if the location is checked
+"timeline_extracted": string: 0 or 1
+"follower_extracted": string: 0 or 1
+"instance": string 0 or 1, depends on which instance find this user id first, suppose 2 instances
+"rank": string: 0 or 1 or 2 (maybe change another name other than rank)
 }
+
+if a user has not been check the location, it has no location attribute
 
 priority:
 0 means from original search api or from stream
