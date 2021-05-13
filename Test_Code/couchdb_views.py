@@ -69,5 +69,3 @@ for instance in ["0", "1", "2"]:
     location_dic[instance] = {"map": map_location}
 write_view(empty, 'location', location_dic)
 
-
-

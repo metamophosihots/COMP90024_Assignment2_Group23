@@ -4,13 +4,18 @@ import time
 import json
 import couchdb
 import re
-import textblob
+import random
+
+INSTANCE = '1'
+SEARCH_FOLLOWER_A_TIME = 15
+SEARCH_TIMELINE_A_TIME = 125
+MAX_PAGE = 8
 
 
-def sendDataToCouchDB(database, tweets):
-    for tweet in tweets:
-        if tweet["_id"] not in database:
-            database.save(tweet)
+def send_data_to_db(database, data_list):
+    for item in data_list:
+        if item["_id"] not in database:
+            database.save(item)
 
 
 # transfer user location to one of the cities in interest
@@ -23,29 +28,23 @@ def location_to_city(user_location, city_name_list):
     return location
 
 
-# this function writes the view document and store into the database
-def create_view(database, doc_name, view_dic):
-    """
-    :param db: the database you want to save to
-    :param doc_name: name of the view document
-    :param view_dic: dictionary of all the views you want to add, key = viewname, value = map function
-    """
-    if f"_design/{doc_name}" in database:
-        view = database[f"_design/{doc_name}"]
-        view['views'] = view_dic
-        database[f"_design/{doc_name}"] = view
+# this function will pop up up to 15 users that have not been searched for timeline
+def get_user_from_db(city, database, type, amount):
+    view = database.view(f'{type}/{city}', limit=int(amount)).rows
+    if len(view) == 0:
+        return view
     else:
-        view = {
-            "_id": f"_design/{doc_name}",
-            "views": view_dic,
-            "language": "javascript",
-            # "options": {"partitioned": False}
-        }
-        # logging.info( f"creating view {design_doc}/{view_name}" )
-        database.save(view)
+        user_list = []
+        if type == "timeline":
+            for row in view:
+                user_info = {'id': int(row.key), 'location': row.value}
+                user_list.append(user_info)
+        elif type == "follower":
+            for row in view:
+                user_info = {'id': int(row.key), 'rank': int(row.value)}
+                user_list.append(user_info)
+        return user_list
 
-
-INSTANCE = '1'
 
 # read configuration from the config json file
 with open('config_harvest.json') as file:
@@ -101,48 +100,50 @@ for twitter in search_tweets_list:
         if user_id not in user_db:
             user_db.save(one_user)
 time.sleep(300)
-
+"""
 # This part may need to be re-writen for multi-cities and this should be in a while loop
 # double dictionary
 user_melb_list = user_db.view('by_city/melb', limit=15)
 search_id_list = []
 for row in user_melb_list:
     search_id_list.append(int(row.key))
-
+"""
 
 # start tweets harvest using author's followers with their timelines
-while True:
-    # ask couchdb for user profile as a dictionary, amount is 15 users
-    follower_search_user_list = [1, 2]
-    if len(follower_search_user_list) == 0:
-        time.sleep(1800)
-        # ask couchdb for user profile as a dictionary, check the amount
-        check_list = [1, 2]
-        if len(check_list) == 0:
-            break
+unsearched_user = True
+while unsearched_user:
 
-    for user in follower_search_user_list:
-        mined_followers_list = miner.mineUserFollowers(user["_id"])
+    # first determine for this loop which city user to search
+    city_this_loop = random.choice(city_name_list)
+    # ask couchdb for user profile as a dictionary, amount is 15 users
+    # (or less if there is no un-searched user left)
+    # one item of follower list will be {'id': int, 'rank': int}
+    follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
+    while len(follower_search_user_list) > 0:
+        user = follower_search_user_list.pop(0)
+        mined_followers_list = miner.mineUserFollowers(user["id"])
         if len(mined_followers_list) > 0:
-            round_number = int(user["round_number"]) + 1
+            follower_rank = str(int(user["rank"]) + 1)
             for follower in mined_followers_list:
+                follower_dic = {"_id": str(follower), "instance": INSTANCE, "follower_extracted": "0",
+                                "timeline_extracted": "0", "rank": follower_rank}
                 if str(follower) not in user_db:
-                    follower_dic = {"_id": str(follower), "location": "Melbourne", "location_confirmed": '0',
-                                    "timeline_extracted": "0", "round_number": round_number}
                     user_db.save(follower_dic)
 
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
-    timeline_search_user_list = [1, 2]
-    timeline_tweets = []
-    for user in timeline_search_user_list:
+    # one user dic in the list is formatted as: {"id": int, "location": str}
+    timeline_search_user_list = get_user_from_db(city_this_loop, user_db, 'timeline', SEARCH_TIMELINE_A_TIME)
+    while len(timeline_search_user_list) > 0:
+        timeline_tweets = []
+        user = timeline_search_user_list.pop(0)
         try:
-            mined_timeline_tweets = miner.mineUserTimeline(user["_id"], 1)
+            mined_timeline_tweets = miner.mineUserTimeline(user["id"], user['location'], MAX_PAGE)
             timeline_tweets = timeline_tweets + mined_timeline_tweets
         except tweepy.error.TweepError:
             continue
-    # send the timeline tweets to the couchdb
-    sendDataToCouchDB(twitter_db, timeline_tweets)
+        # send the timeline tweets to the couchdb
+        send_data_to_db(twitter_db, timeline_tweets)
 
     # change the user_ids that has been searched to status 1
     for user in timeline_search_user_list:

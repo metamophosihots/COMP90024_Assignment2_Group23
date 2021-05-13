@@ -67,7 +67,7 @@ def write_view(database, doc_name, view_dic):
         database.save(view)
 
 
-def get_15_user_timeline(city, database):
+"""def get_15_user_timeline(city, database):
     view = database.view(f'timeline/{city}', limit=15).rows
     if len(view) == 0:
         return view
@@ -87,7 +87,7 @@ def get_15_user_follower(city, database):
         for row in view:
             user_list.append([int(row.key), int(row.value)])
         return user_list
-
+"""
 
 # following is the corrent set up of couchdb
 couch = couchdb.Server('http://admin:admin@127.0.0.1:5984')
