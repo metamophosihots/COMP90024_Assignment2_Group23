@@ -1,7 +1,7 @@
 import tweepy
 from textblob import TextBlob
 import re
-import datetime
+from datetime import datetime
 
 class TwitterMiner(object):
     result_limit = 0
@@ -67,7 +67,7 @@ class TwitterMiner(object):
 
         return twitter_list
 
-    def mineUserFollowers(self, user_id, city_name_list):
+    def mineUserFollowers(self, user_id):
         follower_list = self.api.followers_ids(user_id=user_id, count=200)
         """valid_follower_list = []
         for each_follower_id in follower_list:

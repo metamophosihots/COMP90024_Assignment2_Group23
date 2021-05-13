@@ -44,28 +44,27 @@ couch = couchdb.Server(login_info)
 user_db = connect_db(user_db_name, couch)
 twitter_db = connect_db(twitter_db_name, couch)
 stats_db = connect_db(stats_db_name, couch)
-empty = connect_db('empty', couch)
 
 # start to write views for user database
 timeline_dic = {}
 follower_dic = {}
 for city in city_list:
-    map_timeline = 'function (doc) {\n  if(doc.location == ' + city \
-                   + ' && doc.timeline_extracted == "0")\n  emit(doc._id, doc.location);\n}'
+    map_timeline = 'function (doc) { if(doc.location == "' + city \
+                   + '" && doc.timeline_extracted == "0")  emit(doc._id, doc.location);}'
     timeline_dic[city] = {"map": map_timeline}
 
-    map_follower = 'function (doc) {\n  if(doc.location == ' + city \
-                   + ' && doc.follower_extracted == "0" && (doc.rank == "0" || doc.rank == "1"))' + \
-                   '\n  emit(doc._id, doc.rank);\n}'
+    map_follower = 'function (doc) { if(doc.location == "' + city \
+                   + '" && doc.follower_extracted == "0" && (doc.rank == "0" || doc.rank == "1"))' + \
+                   ' emit(doc._id, doc.rank);}'
     follower_dic[city] = {"map": map_follower}
 
-write_view(empty, 'timeline', timeline_dic)
-write_view(empty, 'follower', follower_dic)
+write_view(user_db, 'timeline', timeline_dic)
+write_view(user_db, 'follower', follower_dic)
 
 location_dic = {}
 for instance in ["0", "1", "2"]:
-    map_location = 'function (doc) {if ((!doc.location) && doc.instance == ' + instance \
-                   + ') { emit(doc._id, doc.instance); }}'
+    map_location = 'function (doc) {if ((!doc.location) && doc.instance == "' + instance \
+                   + '") { emit(doc._id, doc.instance); }}'
     location_dic[instance] = {"map": map_location}
-write_view(empty, 'location', location_dic)
+write_view(user_db, 'location', location_dic)
 

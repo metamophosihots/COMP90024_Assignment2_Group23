@@ -24,7 +24,7 @@ def location_to_city(user_location, city_name_list):
     location = ""
     for city in city_name_list:
         if re.search(city.lower(), user_location.lower()):
-            location = city
+            location = city.lower()
     return location
 
 
@@ -44,6 +44,19 @@ def get_user_from_db(city, database, type, amount):
                 user_info = {'id': int(row.key), 'rank': int(row.value)}
                 user_list.append(user_info)
         return user_list
+
+
+
+def update_follower_extracted(database, user_id):
+    doc = database[str(user_id)]
+    doc['follower_extracted'] = '1'
+    database[str(user_id)] = doc
+
+
+def update_timeline_extracted(database, user_id):
+    doc = database[str(user_id)]
+    doc['timeline_extracted'] = '1'
+    database[str(user_id)] = doc
 
 
 # read configuration from the config json file
@@ -99,15 +112,9 @@ for twitter in search_tweets_list:
                     "follower_extracted": "0", "instance": INSTANCE, 'rank': 0}
         if user_id not in user_db:
             user_db.save(one_user)
-time.sleep(300)
-"""
-# This part may need to be re-writen for multi-cities and this should be in a while loop
-# double dictionary
-user_melb_list = user_db.view('by_city/melb', limit=15)
-search_id_list = []
-for row in user_melb_list:
-    search_id_list.append(int(row.key))
-"""
+print('finish search for the original twitters and keep only the users with correct location')
+#time.sleep(300)
+
 
 # start tweets harvest using author's followers with their timelines
 unsearched_user = True
@@ -115,13 +122,18 @@ while unsearched_user:
 
     # first determine for this loop which city user to search
     city_this_loop = random.choice(city_name_list)
+    print('the city of interest for this instance is:', city_this_loop)
     # ask couchdb for user profile as a dictionary, amount is 15 users
     # (or less if there is no un-searched user left)
     # one item of follower list will be {'id': int, 'rank': int}
+    print('start to search for user followers, dave their id to db without checking location')
     follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
     while len(follower_search_user_list) > 0:
         user = follower_search_user_list.pop(0)
         mined_followers_list = miner.mineUserFollowers(user["id"])
+        # after extract his follower, update this user to follower_extracted status
+        update_follower_extracted(user_db, str(user["id"]))
+
         if len(mined_followers_list) > 0:
             follower_rank = str(int(user["rank"]) + 1)
             for follower in mined_followers_list:
@@ -130,6 +142,7 @@ while unsearched_user:
                 if str(follower) not in user_db:
                     user_db.save(follower_dic)
 
+    print('finish searching for followers, start to extract user time line, 15 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
     # one user dic in the list is formatted as: {"id": int, "location": str}
@@ -144,11 +157,10 @@ while unsearched_user:
             continue
         # send the timeline tweets to the couchdb
         send_data_to_db(twitter_db, timeline_tweets)
+        # update the status of this user to timeline already extracted
+        update_timeline_extracted(user_db,user["id"])
+    print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
 
-    # change the user_ids that has been searched to status 1
-    for user in timeline_search_user_list:
-        user_doc = user_db[user["_id"]]
-        user_doc['timeline_extracted'] = "1"
-        user_doc[str(id)] = user_doc
+    #time.sleep(900)
+    unsearched_user = False
 
-    time.sleep(900)
