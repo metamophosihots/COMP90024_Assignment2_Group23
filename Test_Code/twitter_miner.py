@@ -1,6 +1,7 @@
 import tweepy
+from textblob import TextBlob
 import re
-
+from datetime import datetime
 
 class TwitterMiner(object):
     result_limit = 0
@@ -20,8 +21,8 @@ class TwitterMiner(object):
         self.api = tweepy.API(auth)
         self.result_limit = limit
 
-    # need to rewrite
-    def mineUserTimeline(self, user_id, max_pages):
+
+    def mineUserTimeline(self, user_id, user_location, max_pages):
         twitter_list = []
         last_twitter_id = False
         page = 1
@@ -37,31 +38,38 @@ class TwitterMiner(object):
 
             for timeline_tweet in timeline_result:
                 mined_timeline_twitter = timeline_tweet._json
+                time = self.time_to_iso(mined_timeline_twitter['created_at'])
                 mined_twitter = {
-                    '_id': str(mined_timeline_twitter['id']),
-                    'created_at': mined_timeline_twitter['created_at'],
-                    'source_device': mined_timeline_twitter['source'],
-                    'user_id': mined_timeline_twitter['user']['id'],
-                    'user_name': mined_timeline_twitter['user']['screen_name'],
-                    'location': mined_timeline_twitter['user']['location'],
+                    '_id': mined_timeline_twitter['id_str'],
+                    'created_at': time,
+                    'user_id': user_id,
+                    'location': user_location,
                     "retweet_count": mined_timeline_twitter['retweet_count'],
                     'favorite_count': mined_timeline_twitter['favorite_count'],
                     'coordinates': mined_timeline_twitter['coordinates'],
-                    'obtain_method': 'timeline_mine'
+                    'source_device': mined_timeline_twitter['source']
                 }
                 try:
-                    mined_twitter['text'] = mined_timeline_twitter['full_text']
+                    text = mined_timeline_twitter['full_text']
+                    text = self.process_text(text)
+                    polarity = str(TextBlob(text).sentiment.polarity)
+                    mined_twitter['text'] = text
+                    mined_twitter['polarity'] = polarity
                 except KeyError:
-                    mined_twitter['text'] = mined_timeline_twitter['text']
+                    text = mined_timeline_twitter['text']
+                    text = self.process_text(text)
+                    polarity = str(TextBlob(text).sentiment.polarity)
+                    mined_twitter['text'] = text
+                    mined_twitter['polarity'] = polarity
                 last_twitter_id = mined_twitter['_id']
                 twitter_list.append(mined_twitter)
             page += 1
 
         return twitter_list
 
-    def mineUserFollowers(self, user_id, city_name_list):
-        follower_list = self.api.followers_ids(user_id=user_id, count=10)
-        valid_follower_list = []
+    def mineUserFollowers(self, user_id):
+        follower_list = self.api.followers_ids(user_id=user_id, count=200)
+        """valid_follower_list = []
         for each_follower_id in follower_list:
             location = self.getUserProfile(user_id=each_follower_id)
             if location is None:
@@ -69,8 +77,8 @@ class TwitterMiner(object):
             else:
                 for each_city in city_name_list:
                     if re.search(each_city, location):
-                        valid_follower_list.append(id)
-        return valid_follower_list
+                        valid_follower_list.append(id)"""
+        return follower_list
 
     def mineSearchTweets(self, food_name, geo_code):
         twitter_list = []
@@ -90,10 +98,10 @@ class TwitterMiner(object):
                 searched_twitter = {
                     'tweet_id': twitter['id'],
                     'user_id': twitter['user']['id'],
-                    'user_name': twitter['user']['screen_name'],
+                    #'user_name': twitter['user']['screen_name'],
                     'user_location': twitter['user']['location'],
-                    'created_at': twitter['created_at'],
-                    'source': twitter['source'],
+                    #'created_at': twitter['created_at'],
+                    #'source': twitter['source'],
                 }
                 last_twitter_id = searched_twitter['tweet_id']
                 twitter_list.append(searched_twitter)
@@ -104,3 +112,13 @@ class TwitterMiner(object):
     def getUserProfile(self, user_id):
         user = self.api.get_user(user_id=user_id)
         return user['location']
+
+    def time_to_iso(self, time_string):
+        time = datetime.strptime(time_string, '%a %b %d %H:%M:%S %z %Y')
+        time = str(time.isoformat())
+        return time
+
+    def process_text(self, text):
+        text = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",text).split())
+        text = text.lower()
+        return text

@@ -1,0 +1,5 @@
+{
+  "login_url" : "http://admin:admin@127.0.0.1:5984",
+  "database_name" : ["user", "twitter", "stats"],
+  "city": ["melbourne", "sydney", "perth", "brisbane", "adelaide"]
+}

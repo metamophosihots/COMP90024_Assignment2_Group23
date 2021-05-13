@@ -1,5 +1,5 @@
 {
 	"account_info": {"consumer_key": "X4cLlQRmTuNKOE56BDeDiUZxB", "consumer_secret_key": "AQYKvtmr8vNlxZ7wGJdg6ZX1BADF8zQ1loB047avZUjFqVuFbd",
 			"access_token": "1391182060660817926-Be5P08fNhb8YvOoI2ncr3gbsVPOZHh", "access_token_secret": "RGoWz1mW04HOhhOvEnlFgxSk8Rr8ur6jerxjRRwBLNYTK"},
-	"city_list": [{"city_name": "Melbourne",  "geo_code": "-37.8356,145.0522,30km",  "location": ["Melbourne", "Melbourne, Victoria", "Melbourne Victoria"]}],
-	"couchdb_info": {"login_url": "http://admin:admin@127.0.0.1:5984", "database_name": ["user", "twitter"]}
+	"city_list": [{"city_name": "melbourne",  "geo_code": "-37.8356,145.0522,30km",  "location": ["Melbourne", "Melbourne, Victoria", "Melbourne Victoria"]}],
+	"couchdb_info": {"login_url": "http://admin:admin@127.0.0.1:5984", "database_name": ["user", "twitter"]}}

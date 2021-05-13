@@ -5,6 +5,7 @@ import datetime
 import re
 import couchdb
 
+
 # read configuration from the config json file
 with open('config_stream.json') as file:
     config = json.load(file)
