@@ -68,3 +68,8 @@ for instance in ["0", "1", "2"]:
     location_dic[instance] = {"map": map_location}
 write_view(user_db, 'location', location_dic)
 
+# just test, please ignore this part
+test = {"_id": "000", 'content': ['food', 'love', 'hate']}
+
+test1 = stats_db['000']
+print(type(test1['content']))

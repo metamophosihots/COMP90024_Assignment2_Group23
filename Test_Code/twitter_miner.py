@@ -14,12 +14,13 @@ class TwitterMiner(object):
         'access_token_secret': '--TOKEN--'
     }
 
-    def __init__(self, keys_dict, limit):
+    def __init__(self, keys_dict, limit, food_keyword):
         self.twitter_developer_account_keys = keys_dict
         auth = tweepy.OAuthHandler(keys_dict['consumer_key'], keys_dict['consumer_secret_key'])
         auth.set_access_token(keys_dict['access_token'], keys_dict['access_token_secret'])
         self.api = tweepy.API(auth)
         self.result_limit = limit
+        self.food_keyword = food_keyword
 
 
     def mineUserTimeline(self, user_id, user_location, max_pages):
@@ -51,17 +52,15 @@ class TwitterMiner(object):
                 }
                 try:
                     text = mined_timeline_twitter['full_text']
-                    text = self.process_text(text)
-                    polarity = str(TextBlob(text).sentiment.polarity)
-                    mined_twitter['text'] = text
-                    mined_twitter['polarity'] = polarity
                 except KeyError:
                     text = mined_timeline_twitter['text']
-                    text = self.process_text(text)
-                    polarity = str(TextBlob(text).sentiment.polarity)
-                    mined_twitter['text'] = text
-                    mined_twitter['polarity'] = polarity
-                last_twitter_id = mined_twitter['_id']
+                text, keyword = self.process_text(text)
+                polarity = TextBlob(text).sentiment.polarity
+                mined_twitter['text'] = text
+                mined_twitter['polarity'] = polarity
+                if len(keyword) > 0:
+                    mined_twitter['keyword'] = keyword
+                last_twitter_id = int(mined_twitter['_id'])
                 twitter_list.append(mined_twitter)
             page += 1
 
@@ -115,10 +114,17 @@ class TwitterMiner(object):
 
     def time_to_iso(self, time_string):
         time = datetime.strptime(time_string, '%a %b %d %H:%M:%S %z %Y')
-        time = str(time.isoformat())
+        time = time.isoformat()
         return time
 
     def process_text(self, text):
         text = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",text).split())
         text = text.lower()
-        return text
+        keyword = self.search_keyword(text)
+        return text, keyword
+
+    def search_keyword(self, text):
+        pattern = "|".join(self.food_keyword)
+        keyword = re.findall(pattern, text)
+        return keyword
+
