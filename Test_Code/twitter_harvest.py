@@ -1,14 +1,14 @@
 import tweepy.error
 import twitter_miner
-import time
 import json
 import couchdb
 import re
 import random
+import time
 
-INSTANCE = '1'
+INSTANCE = 0
 SEARCH_FOLLOWER_A_TIME = 15
-SEARCH_TIMELINE_A_TIME = 125
+SEARCH_TIMELINE_A_TIME = 25 #125
 MAX_PAGE = 8
 
 
@@ -28,12 +28,7 @@ def location_to_city(user_location, city_name_list):
     return location
 
 
-def search_key_word(text, key_words):
-    word = ''
-
-    return word
-
-# this function will pop up up to 15 users that have not been searched for timeline
+# this function will pop up users that have not been searched for timeline
 def get_user_from_db(city, database, type, amount):
     view = database.view(f'{type}/{city}', limit=int(amount)).rows
     if len(view) == 0:
@@ -48,8 +43,11 @@ def get_user_from_db(city, database, type, amount):
             for row in view:
                 user_info = {'id': int(row.key), 'rank': int(row.value)}
                 user_list.append(user_info)
+        elif type == "location":
+            for row in view:
+                user_info = {'id': int(row.key)}
+                user_list.append(user_info)
         return user_list
-
 
 
 def update_follower_extracted(database, user_id):
@@ -68,21 +66,19 @@ def update_timeline_extracted(database, user_id):
 with open('config_harvest.json') as file:
     config = json.load(file)
 
-food_keyword = config["food_keywords"]
+food_keyword = config["food_keyword"]
 
 # set up miner to harvest tweets
 account_info = config['account_info']
-miner = twitter_miner.TwitterMiner(account_info, 60)
+miner = twitter_miner.TwitterMiner(account_info, 200, food_keyword)
 
 # set up city list and geo code to search
 city_list = config['city_list']
 city_name_list = []
 city_geocode_dict = {}
-location_list = []
 for city in city_list:
     city_name_list.append(city['city_name'])
     city_geocode_dict[city['city_name']] = city['geo_code']
-    location_list = location_list + city['location']
 
 # Adelaide: -34.8917,138.6033,16km
 # Perth: -32.0117,115.3986,60km
@@ -98,7 +94,7 @@ twitter_db_name = config['couchdb_info']['database_name'][1]
 couch = couchdb.Server(login_info)
 user_db = couch[user_db_name]
 twitter_db = couch[twitter_db_name]
-
+"""
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
 search_tweets_list = []
@@ -119,11 +115,11 @@ for twitter in search_tweets_list:
 print('finish search for the original twitters and keep only the users with correct location')
 time.sleep(300)
 
-
+"""
 # start tweets harvest using author's followers with their timelines
 unsearched_user = True
 while unsearched_user:
-
+#for city_this_loop in city_name_list:
     # first determine for this loop which city user to search
     city_this_loop = random.choice(city_name_list)
     print('the city of interest for this instance is:', city_this_loop)
@@ -131,7 +127,7 @@ while unsearched_user:
     # (or less if there is no un-searched user left)
     # one item of follower list will be {'id': int, 'rank': int}
 
-    print('start to search for user followers, dave their id to db without checking location')
+    print('start to search for user followers, save their id to db without checking location')
     follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
     while len(follower_search_user_list) > 0:
         user = follower_search_user_list.pop(0)
@@ -147,7 +143,7 @@ while unsearched_user:
                 if str(follower) not in user_db:
                     user_db.save(follower_dic)
 
-    #print('finish searching for followers, start to extract user time line, 15 users a time')
+    print('finish searching for followers, start to extract user time line, 25 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
     # one user dic in the list is formatted as: {"id": int, "location": str}
@@ -166,6 +162,6 @@ while unsearched_user:
         update_timeline_extracted(user_db,user["id"])
     print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
 
-    #time.sleep(900)
-    unsearched_user = False
+    time.sleep(900)
+    # unsearched_user = False
 

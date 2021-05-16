@@ -39,10 +39,14 @@ class TwitterMiner(object):
 
             for timeline_tweet in timeline_result:
                 mined_timeline_twitter = timeline_tweet._json
-                time = self.time_to_iso(mined_timeline_twitter['created_at'])
+                year, date, weekday, hour = self.time_detail(mined_timeline_twitter['created_at'])
                 mined_twitter = {
                     '_id': mined_timeline_twitter['id_str'],
-                    'created_at': time,
+                    'created_at': mined_timeline_twitter['created_at'],
+                    'year': year,
+                    'date': date,
+                    'weekday': weekday,
+                    'hour': hour,
                     'user_id': user_id,
                     'location': user_location,
                     "retweet_count": mined_timeline_twitter['retweet_count'],
@@ -87,10 +91,10 @@ class TwitterMiner(object):
 
         while page <= max_pages:
             if last_twitter_id:
-                search_result = self.api.search(q=food_name, geocode=geo_code, count=15,
+                search_result = self.api.search(q=food_name, geocode=geo_code, count=20,
                                                 max_id=last_twitter_id - 1, entities=True)
             else:
-                search_result = self.api.search(q=food_name, geocode=geo_code, count=15, entities=True)
+                search_result = self.api.search(q=food_name, geocode=geo_code, count=20, entities=True)
 
             for search_object in search_result:
                 twitter = search_object._json
@@ -112,10 +116,13 @@ class TwitterMiner(object):
         user = self.api.get_user(user_id=user_id)
         return user['location']
 
-    def time_to_iso(self, time_string):
+    def time_detail(self, time_string):
         time = datetime.strptime(time_string, '%a %b %d %H:%M:%S %z %Y')
-        time = time.isoformat()
-        return time
+        year = time.year
+        date = str(time.date())
+        weekday = time.weekday()
+        hour = time.hour
+        return year, date, weekday, hour
 
     def process_text(self, text):
         text = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",text).split())
@@ -124,7 +131,8 @@ class TwitterMiner(object):
         return text, keyword
 
     def search_keyword(self, text):
-        pattern = "|".join(self.food_keyword)
+        pattern = " | ".join(self.food_keyword)
         keyword = re.findall(pattern, text)
+        keyword = list(set(keyword))
         return keyword
 
