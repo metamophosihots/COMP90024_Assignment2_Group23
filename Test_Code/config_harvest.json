@@ -1,5 +1,15 @@
 {
 	"account_info": {"consumer_key": "X4cLlQRmTuNKOE56BDeDiUZxB", "consumer_secret_key": "AQYKvtmr8vNlxZ7wGJdg6ZX1BADF8zQ1loB047avZUjFqVuFbd",
 			"access_token": "1391182060660817926-Be5P08fNhb8YvOoI2ncr3gbsVPOZHh", "access_token_secret": "RGoWz1mW04HOhhOvEnlFgxSk8Rr8ur6jerxjRRwBLNYTK"},
-	"city_list": [{"city_name": "melbourne",  "geo_code": "-37.8356,145.0522,30km",  "location": ["Melbourne", "Melbourne, Victoria", "Melbourne Victoria"]}],
-	"couchdb_info": {"login_url": "http://admin:admin@127.0.0.1:5984", "database_name": ["user", "twitter"]}}
+	"city_list": [{"city_name": "melbourne",  "geo_code": "-37.8356,145.0522,30km"}, {"city_name": "adelaide",  "geo_code": "-34.8917,138.6033,16km"},
+		{"city_name": "perth",  "geo_code": "-32.0117,115.3986,60km"}, {"city_name": "sydney",  "geo_code": "-33.8917,151.0708,20km"},
+		{"city_name": "brisbane",  "geo_code": "-27.5125,153.0136,32km"}],
+	"couchdb_info": {"login_url": "http://admin:admin@172.26.128.24:5984", "database_name": ["user", "twitter"]},
+	"food_keyword": ["pizza", "burger", "dumpling", "curry", "ramen",
+		"noodles", "pasta", "fried chicken", "sushi", "salad",
+		"chips", "toast", "bbq", "steak","hot dog",
+		"hot pot", "borek", "bread", "kebab", "taco",
+		"pita", "burrito", "laksa", "kimchi", "ice cream",
+		"cake", "pie", "vegemite", "lasagna", "lamington",
+		"sausage", "biscuit", "tim tam", "hsp", "donuts"]
+}

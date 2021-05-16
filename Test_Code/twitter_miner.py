@@ -14,12 +14,13 @@ class TwitterMiner(object):
         'access_token_secret': '--TOKEN--'
     }
 
-    def __init__(self, keys_dict, limit):
+    def __init__(self, keys_dict, limit, food_keyword):
         self.twitter_developer_account_keys = keys_dict
         auth = tweepy.OAuthHandler(keys_dict['consumer_key'], keys_dict['consumer_secret_key'])
         auth.set_access_token(keys_dict['access_token'], keys_dict['access_token_secret'])
         self.api = tweepy.API(auth)
         self.result_limit = limit
+        self.food_keyword = food_keyword
 
 
     def mineUserTimeline(self, user_id, user_location, max_pages):
@@ -38,10 +39,14 @@ class TwitterMiner(object):
 
             for timeline_tweet in timeline_result:
                 mined_timeline_twitter = timeline_tweet._json
-                time = self.time_to_iso(mined_timeline_twitter['created_at'])
+                year, date, weekday, hour = self.time_detail(mined_timeline_twitter['created_at'])
                 mined_twitter = {
                     '_id': mined_timeline_twitter['id_str'],
-                    'created_at': time,
+                    'created_at': mined_timeline_twitter['created_at'],
+                    'year': year,
+                    'date': date,
+                    'weekday': weekday,
+                    'hour': hour,
                     'user_id': user_id,
                     'location': user_location,
                     "retweet_count": mined_timeline_twitter['retweet_count'],
@@ -51,17 +56,15 @@ class TwitterMiner(object):
                 }
                 try:
                     text = mined_timeline_twitter['full_text']
-                    text = self.process_text(text)
-                    polarity = str(TextBlob(text).sentiment.polarity)
-                    mined_twitter['text'] = text
-                    mined_twitter['polarity'] = polarity
                 except KeyError:
                     text = mined_timeline_twitter['text']
-                    text = self.process_text(text)
-                    polarity = str(TextBlob(text).sentiment.polarity)
-                    mined_twitter['text'] = text
-                    mined_twitter['polarity'] = polarity
-                last_twitter_id = mined_twitter['_id']
+                text, keyword = self.process_text(text)
+                polarity = TextBlob(text).sentiment.polarity
+                mined_twitter['text'] = text
+                mined_twitter['polarity'] = polarity
+                if len(keyword) > 0:
+                    mined_twitter['keyword'] = keyword
+                last_twitter_id = int(mined_twitter['_id'])
                 twitter_list.append(mined_twitter)
             page += 1
 
@@ -88,10 +91,10 @@ class TwitterMiner(object):
 
         while page <= max_pages:
             if last_twitter_id:
-                search_result = self.api.search(q=food_name, geocode=geo_code, count=15,
+                search_result = self.api.search(q=food_name, geocode=geo_code, count=20,
                                                 max_id=last_twitter_id - 1, entities=True)
             else:
-                search_result = self.api.search(q=food_name, geocode=geo_code, count=15, entities=True)
+                search_result = self.api.search(q=food_name, geocode=geo_code, count=20, entities=True)
 
             for search_object in search_result:
                 twitter = search_object._json
@@ -113,12 +116,23 @@ class TwitterMiner(object):
         user = self.api.get_user(user_id=user_id)
         return user['location']
 
-    def time_to_iso(self, time_string):
+    def time_detail(self, time_string):
         time = datetime.strptime(time_string, '%a %b %d %H:%M:%S %z %Y')
-        time = str(time.isoformat())
-        return time
+        year = time.year
+        date = str(time.date())
+        weekday = time.weekday()
+        hour = time.hour
+        return year, date, weekday, hour
 
     def process_text(self, text):
         text = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",text).split())
         text = text.lower()
-        return text
+        keyword = self.search_keyword(text)
+        return text, keyword
+
+    def search_keyword(self, text):
+        pattern = " | ".join(self.food_keyword)
+        keyword = re.findall(pattern, text)
+        keyword = list(set(keyword))
+        return keyword
+

@@ -1,5 +1,12 @@
 {
-  "login_url" : "http://admin:admin@127.0.0.1:5984",
+  "login_url" : "http://admin:admin@172.26.128.24:5984",
   "database_name" : ["user", "twitter", "stats"],
-  "city": ["melbourne", "sydney", "perth", "brisbane", "adelaide"]
+  "city": ["melbourne", "sydney", "perth", "brisbane", "adelaide"],
+  "food": ["pizza", "burger", "dumpling", "curry", "ramen",
+    "noodles", "pasta", "fried chicken", "sushi", "salad",
+    "chips", "toast", "bbq", "steak","hot dog",
+    "hot pot", "borek", "bread", "kebab", "taco",
+    "pita", "burrito", "laksa", "kimchi", "ice cream",
+    "cake", "pie", "vegemite", "lasagna", "lamington",
+    "sausage", "biscuit", "tim tam", "hsp", "donuts"]
 }
