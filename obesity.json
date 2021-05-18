@@ -1,0 +1,12 @@
+{
+    "from": "2014", "to": "2015",
+    "data": " ppl_18yrs_plus_obese_per_cent",
+    "obesity": 
+    {
+        "sydney": 16.85, 
+        "melbourne": 19.52,
+        "brisbane": 18.64,
+        "adelaide": 20.71,
+        "perth": 18.37
+    }
+}

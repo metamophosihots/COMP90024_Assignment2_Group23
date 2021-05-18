@@ -1,0 +1,11 @@
+{
+    "from": "2016", "to": "2017",
+    "data": "diabetes_per_100k_pop",
+    "diabetes": {
+        "sydney": 95.3, 
+        "melbourne": 64.2,
+        "brisbane": 154,
+        "adelaide": 129.1,
+        "perth": 202.9
+    }
+}
