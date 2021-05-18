@@ -1,0 +1,14 @@
+{
+	"account_info": {"consumer_key": "o7frQQjOkrcUUJJYLIuzXltks", "consumer_secret_key": "BXPIsvDEif9drOnMveyyIGZhNu58pBjE7uonx0m2EBpyZV8v86",
+			"access_token": "1308176095397593089-oCNxwcpMVDc6o3FOTL9hAT24LS5WG0", "access_token_secret": "GlnFCkxNOUwxPGDfU4agjqi4FuoWe1wACBbxChtQ6cLGO"},
+	"city_list": [{"city_name": "brisbane",  "geo_code": "-27.5125,153.0136,32km"}],
+	"couchdb_info": {"login_url": "http://admin:admin@172.26.128.24:5984", "database_name": ["user", "twitter"]},
+	"food_keyword": ["pizza", "burger", "dumpling", "curry", "ramen",
+		"noodles", "pasta", "fried chicken", "sushi", "salad",
+		"chips", "toast", "bbq", "steak","hot dog",
+		"hot pot", "borek", "bread", "kebab", "taco",
+		"pita", "burrito", "laksa", "kimchi", "ice cream",
+		"cake", "pie", "vegemite", "lasagna", "lamington",
+		"sausage", "biscuit", "tim tam", "hsp", "donuts"],
+	"instance": 2
+}

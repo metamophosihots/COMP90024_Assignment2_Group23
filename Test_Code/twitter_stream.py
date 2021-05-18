@@ -105,22 +105,6 @@ city_name_list = ["melbourne", "sydney", "perth", "brisbane", "adelaide"]
 
 another_round = True
 while another_round:
-    print('start to check user location')
-    while another_round: #datetime.datetime.now().time().__le__(start_time):
-        #time.sleep(900)
-
-        # ask couch db for user_id that has not confirmed location, amount is 900 users
-        check_profile_user_list = get_user_from_db(INSTANCE, user_db, 'location', SEARCH_LOCATION_A_TIME)
-        while len(check_profile_user_list) > 0:
-            one_user = check_profile_user_list.pop(0)
-            user_profile = api.get_user(one_user["id"])
-            if user_profile['location'] is None:
-                update_location(user_db, one_user['id'], 'other')
-            else:
-                user_location = location_to_city(user_profile['location'], city_name_list)
-                update_location(user_db, one_user["id"], user_location)
-
-        another_round = False
 
     while datetime.datetime.now().time().__ge__(start_time):
         if datetime.datetime.now().time().__ge__(bound_time):

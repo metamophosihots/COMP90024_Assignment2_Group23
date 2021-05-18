@@ -72,15 +72,6 @@ class TwitterMiner(object):
 
     def mineUserFollowers(self, user_id):
         follower_list = self.api.followers_ids(user_id=user_id, count=200)
-        """valid_follower_list = []
-        for each_follower_id in follower_list:
-            location = self.getUserProfile(user_id=each_follower_id)
-            if location is None:
-                continue
-            else:
-                for each_city in city_name_list:
-                    if re.search(each_city, location):
-                        valid_follower_list.append(id)"""
         return follower_list
 
     def mineSearchTweets(self, food_name, geo_code):
@@ -91,10 +82,10 @@ class TwitterMiner(object):
 
         while page <= max_pages:
             if last_twitter_id:
-                search_result = self.api.search(q=food_name, geocode=geo_code, count=20,
+                search_result = self.api.search(q=food_name, geocode=geo_code, count=100,
                                                 max_id=last_twitter_id - 1, entities=True)
             else:
-                search_result = self.api.search(q=food_name, geocode=geo_code, count=20, entities=True)
+                search_result = self.api.search(q=food_name, geocode=geo_code, count=100, entities=True)
 
             for search_object in search_result:
                 twitter = search_object._json
@@ -112,8 +103,8 @@ class TwitterMiner(object):
 
         return twitter_list
 
-    def getUserProfile(self, user_id):
-        user = self.api.get_user(user_id=user_id)
+    def get_user_location(self, user_id):
+        user = self.api.get_user(user_id=user_id)._json
         return user['location']
 
     def time_detail(self, time_string):
