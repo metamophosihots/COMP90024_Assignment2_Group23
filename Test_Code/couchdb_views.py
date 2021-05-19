@@ -61,7 +61,7 @@ for city in city_list:
                    ' emit(doc._id, doc.rank);}'
     follower_dic[city] = {"map": map_follower}
 
-for instance in ["0", "1"]:
+for instance in ["0", "1", "2"]:
     map_location = 'function (doc) {if ((!doc.location) && doc.instance == "' + instance \
                    + '") { emit(doc._id, null); }}'
     location_dic[instance] = {"map": map_location}
@@ -69,6 +69,13 @@ for instance in ["0", "1"]:
 write_view(user_db, 'timeline', timeline_dic)
 write_view(user_db, 'follower', follower_dic)
 write_view(user_db, 'location', location_dic)
+
+check_dic = {}
+for instance in ["0", "1", "2"]:
+    map_check = 'function (doc) {if (doc.instance == "' + instance + '" && (doc.timeline_extracted == "0" || !doc.location || (doc.follower_extracted == "0" && (doc.rank == "1" || doc.rank == "0")))) {emit (doc.instance, 1);} else if (doc.instance == "' + instance +'") {emit(doc.instance, 0);}}'
+    check_dic[instance] = {"map": map_check, "reduce": "_sum"}
+
+write_view(user_db, 'check', check_dic)
 
 scenario1_dic = {}
 scenario2_dic = {}
@@ -134,9 +141,13 @@ print('now print the total number of tweets that mentioned any food words in eac
 food_mentioned = twitter_db.view('scenario1/food', group=True)
 for row in food_mentioned:
     print(row.key, row.value)
-"""
 
 print('now print the total number of tweets that mentioned any food words in each city by each date')
 food_mentioned = twitter_db.view('scenario2/combine', group=True)
 for row in food_mentioned:
     print(row.key, row.value)
+"""
+
+check_left = user_db.view('check/1', group = True).rows
+
+print(check_left[0].value)

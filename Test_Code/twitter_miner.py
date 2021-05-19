@@ -78,7 +78,7 @@ class TwitterMiner(object):
         twitter_list = []
         last_twitter_id = False
         page = 1
-        max_pages = 1
+        max_pages = 2
 
         while page <= max_pages:
             if last_twitter_id:

@@ -1,7 +1,8 @@
 {
 	"account_info": {"consumer_key": "o7frQQjOkrcUUJJYLIuzXltks", "consumer_secret_key": "BXPIsvDEif9drOnMveyyIGZhNu58pBjE7uonx0m2EBpyZV8v86",
 			"access_token": "1308176095397593089-oCNxwcpMVDc6o3FOTL9hAT24LS5WG0", "access_token_secret": "GlnFCkxNOUwxPGDfU4agjqi4FuoWe1wACBbxChtQ6cLGO"},
-	"city_list": [{"city_name": "brisbane",  "geo_code": "-27.5125,153.0136,32km"}],
+	"city_list": [{"city_name": "brisbane",  "geo_code": "-27.5125,153.0136,32km"}, {"city_name": "perth",  "geo_code": "-32.0117,115.3986,60km"}],
+	"bounding_box": [153.7031,27.7942,153.3964,-27.1439, 115.6325,-32.5417,116.0558,-31.6625],
 	"couchdb_info": {"login_url": "http://admin:admin@172.26.128.24:5984", "database_name": ["user", "twitter"]},
 	"food_keyword": ["pizza", "burger", "dumpling", "curry", "ramen",
 		"noodles", "pasta", "fried chicken", "sushi", "salad",
