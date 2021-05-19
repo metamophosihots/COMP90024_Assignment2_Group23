@@ -69,19 +69,14 @@ class ProjectStreamListener(tweepy.StreamListener):
 
     def __init__(self, threshold_time):
         super(ProjectStreamListener, self).__init__()
-        # test code
-        self.save_file = open('tweets_streamed_original.json', 'w')
-        # test code
         self.tweets_list = []
         self.upperbound_time = threshold_time
 
     def on_data(self, tweet):
         if datetime.datetime.now().time().__le__(self.upperbound_time):
             self.tweets_list.append(json.loads(tweet))
-            self.save_file.write(str(tweet))
             return True
         else:
-            self.save_file.close()
             return False
 
     def on_error(self, status):
@@ -122,5 +117,5 @@ while True:
                                 user_db.save(one_user)
                             except couchdb.http.ResourceConflict:
                                 continue
-    project_stream_listener.clear_tweets_dict()
-    time.sleep(75600)
+            project_stream_listener.clear_tweets_dict()
+    time.sleep(74700)
