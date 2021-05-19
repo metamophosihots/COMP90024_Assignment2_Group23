@@ -1,0 +1,12 @@
+{
+    "from": "2015", "to": "2016",
+    "data": "average_income_10k",
+    "income": 
+    {
+        "sydney": 7.9514, 
+        "melbourne": 7.0094,
+        "brisbane": 6.8622,
+        "adelaide": 7.5443,
+        "perth": 5.0250
+    }
+}
