@@ -14,9 +14,13 @@ MAX_PAGE = 8
 
 
 def send_data_to_db(database, data_list):
-    for item in data_list:
-        if item["_id"] not in database:
-            database.save(item)
+    if len(data_list) > 0:
+        for item in data_list:
+            if item["_id"] not in database:
+                try:
+                    database.save(item)
+                except couchdb.http.ResourceConflict:
+                    continue
 
 
 # transfer user location to one of the cities in interest
@@ -71,7 +75,7 @@ def update_location(database, user_id, location):
 
 
 # read configuration from the config json file
-with open('config_harvest_1.json') as file:
+with open('config_harvest.json') as file:
     config = json.load(file)
 
 food_keyword = config["food_keyword"]
@@ -82,7 +86,9 @@ miner = twitter_miner.TwitterMiner(account_info, 200, food_keyword)
 
 #set the up the number of instance of this program
 instance = int(config['instance'])
-
+sleep_time = 900
+if instance == 2:
+    sleep_time = 1800
 # set up city list and geo code to search
 city_list = config['city_list']
 city_name_list = []
@@ -123,9 +129,11 @@ for twitter in search_tweets_list:
         one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
                     "follower_extracted": "0", "instance": instance, 'rank': '0'}
         if user_id not in user_db:
-            user_db.save(one_user)
+            try:
+                user_db.save(one_user)
+            except couchdb.http.ResourceConflict:
+                continue
 print('finish search for the original twitters and keep only the users with correct location')
-time.sleep(300)
 
 # start tweets harvest using author's followers with their timelines
 # unsearched_user = True
@@ -144,7 +152,10 @@ while True:
         user = follower_search_user_list.pop(0)
         mined_followers_list = miner.mineUserFollowers(user["id"])
         # after extract his follower, update this user to follower_extracted status
-        update_follower_extracted(user_db, str(user["id"]))
+        try:
+            update_follower_extracted(user_db, str(user["id"]))
+        except couchdb.http.ResourceConflict:
+            continue
 
         if len(mined_followers_list) > 0:
             follower_rank = str(int(user["rank"]) + 1)
@@ -152,21 +163,28 @@ while True:
                 follower_dic = {"_id": str(follower), "instance": instance, "follower_extracted": "0",
                                 "timeline_extracted": "0", "rank": follower_rank}
                 if str(follower) not in user_db:
-                    user_db.save(follower_dic)
+                    try:
+                        user_db.save(follower_dic)
+                    except couchdb.http.ResourceConflict:
+                        continue
 
     # ask couch db for user_id that has not confirmed location, amount is 900 users
     check_profile_user_list = get_user_from_db(instance, user_db, 'location', SEARCH_LOCATION_A_TIME)
     while len(check_profile_user_list) > 0:
         one_user = check_profile_user_list.pop(0)
-        user_location = miner.get_user_location(int(one_user["id"]))
-        if user_location is None:
-            update_location(user_db, one_user['id'], 'other')
-        else:
-            user_location = location_to_city(user_location)
+        user_location = ''
+        try:
+            user_location = miner.get_user_location(int(one_user["id"]))
+        except tweepy.error.TweepError:
+            continue
+        user_location = location_to_city(user_location)
+        try:
             if user_location == "":
                 update_location(user_db, one_user['id'], 'other')
             else:
                 update_location(user_db, one_user["id"], user_location)
+        except couchdb.http.ResourceConflict:
+            continue
 
     print('finish searching for followers, start to extract user time line, 25 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
@@ -184,8 +202,10 @@ while True:
         # send the timeline tweets to the couchdb
         send_data_to_db(twitter_db, timeline_tweets)
         # update the status of this user to timeline already extracted
-        update_timeline_extracted(user_db, user["id"])
+        try:
+            update_timeline_extracted(user_db, user["id"])
+        except couchdb.http.ResourceConflict:
+            continue
     print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
 
-    time.sleep(900)
-    # unsearched_user = False
+    time.sleep(sleep_time)

@@ -89,22 +89,25 @@ map_2_total = "function (doc) { if (doc.year >= 2020) emit([doc.location, doc.da
 map_2_total_polarity = "function (doc) { if (doc.year >= 2020) emit([doc.location, doc.date], doc.polarity);}"
 map_2_food = "function (doc) { if (doc.keyword && doc.year >= 2020) {emit([doc.location, doc.date], 1);} else if (doc.year >= 2020) {emit([doc.location, doc.date], 0);}}"
 map_2_food_polarity = "function (doc) { if (doc.keyword && doc.year >= 2020) {emit([doc.location, doc.date], doc.polarity);} else if (doc.year >= 2020) {emit([doc.location, doc.date], 0);}}"
+map_2_combine = "function (doc) { if (doc.keyword && doc.year >= 2020) {emit([doc.location, doc.date], {'total': 1, 'total_polarity': doc.polarity, 'food': 1, 'food_polarity': doc.polarity});} else if (doc.year >= 2020) {emit([doc.location, doc.date], {'total': 1, 'total_polarity': doc.polarity, 'food': 0, 'food_polarity': 0});}}"
 
 scenario2_dic['total'] = {"map": map_2_total, "reduce": "_sum"}
 scenario2_dic['total_polarity'] = {"map": map_2_total_polarity, "reduce": "_sum"}
 scenario2_dic['food'] = {"map": map_2_food, "reduce": "_sum"}
 scenario2_dic['food_polarity'] = {"map": map_2_food_polarity, "reduce": "_sum"}
+scenario2_dic['combine'] = {"map": map_2_combine, "reduce": "_sum"}
 
 map_3_total = "function (doc) { if (doc.hour && doc.year>=2019) emit([doc.location, doc.year, doc.hour], 1);}"
 map_3_total_polarity = "function (doc) { if (doc.hour && doc.year>=2019) emit([doc.location, doc.year, doc.hour], doc.polarity);}"
 map_3_food = "function (doc) { if (doc.keyword && doc.hour && doc.year>=2019) emit([doc.location, doc.year, doc.hour], 1);}"
 map_3_food_polarity = "function (doc) { if (doc.keyword && doc.hour && doc.year>=2019) emit([doc.location, doc.year, doc.hour], doc.polarity);}"
+map_3_combine = "function (doc) { if (doc.keyword && doc.hour && doc.year>=2019) {emit([doc.location, doc.year, doc.hour], {'total': 1, 'total_polarity': doc.polarity, 'food': 1, 'food_polarity': doc.polarity});} else if (doc.hour && doc.year>=2019) {emit([doc.location, doc.year, doc.hour], {'total': 1, 'total_polarity': doc.polarity, 'food': 0, 'food_polarity': 0});}}"
 
 scenario3_dic['total'] = {"map": map_3_total, "reduce": "_sum"}
 scenario3_dic['total_polarity'] = {"map": map_3_total_polarity, "reduce": "_sum"}
 scenario3_dic['food'] = {"map": map_3_food, "reduce": "_sum"}
 scenario3_dic['food_polarity'] = {"map": map_3_food_polarity, "reduce": "_sum"}
-
+scenario3_dic['combine']: {"map": map_3_combine, "reduce": "_sum"}
 
 write_view(twitter_db, 'scenario1', scenario1_dic)
 write_view(twitter_db, 'scenario2', scenario2_dic)
@@ -134,6 +137,6 @@ for row in food_mentioned:
 """
 
 print('now print the total number of tweets that mentioned any food words in each city by each date')
-food_mentioned = twitter_db.view('scenario2/food', group=True)
+food_mentioned = twitter_db.view('scenario2/combine', group=True)
 for row in food_mentioned:
     print(row.key, row.value)
