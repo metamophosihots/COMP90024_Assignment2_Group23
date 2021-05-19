@@ -6,11 +6,12 @@ import re
 import random
 import time
 
-#INSTANCE = 0
+
 SEARCH_FOLLOWER_A_TIME = 15
 SEARCH_TIMELINE_A_TIME = 125
 SEARCH_LOCATION_A_TIME = 900
 MAX_PAGE = 8
+SLEEP_TIME = 900
 
 
 def send_data_to_db(database, data_list):
@@ -86,9 +87,8 @@ miner = twitter_miner.TwitterMiner(account_info, 200, food_keyword)
 
 #set the up the number of instance of this program
 instance = int(config['instance'])
-sleep_time = 900
-if instance == 2:
-    sleep_time = 1800
+
+
 # set up city list and geo code to search
 city_list = config['city_list']
 city_name_list = []
@@ -112,7 +112,7 @@ couch = couchdb.Server(login_info)
 user_db = couch[user_db_name]
 twitter_db = couch[twitter_db_name]
 
-print('start to search for twitters for the first list of user ids using search API')
+#print('start to search for twitters for the first list of user ids using search API')
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
 search_tweets_list = []
@@ -123,17 +123,19 @@ for food_name in food_keyword:
 # get the original twitters' author and check location
 one_user = {}
 for twitter in search_tweets_list:
-    location = location_to_city(twitter['user_location'])
-    if not location == "":
-        user_id = str(twitter['user_id'])
-        one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
-                    "follower_extracted": "0", "instance": instance, 'rank': '0'}
-        if user_id not in user_db:
-            try:
-                user_db.save(one_user)
-            except couchdb.http.ResourceConflict:
-                continue
-print('finish search for the original twitters and keep only the users with correct location')
+    location = twitter['user_location']
+    if location is not None:
+        location = location_to_city(location)
+        if not location == "":
+            user_id = str(twitter['user_id'])
+            one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
+                        "follower_extracted": "0", "instance": instance, 'rank': '0'}
+            if user_id not in user_db:
+                try:
+                    user_db.save(one_user)
+                except couchdb.http.ResourceConflict:
+                    continue
+#print('finish search for the original twitters and keep only the users with correct location')
 
 # start tweets harvest using author's followers with their timelines
 # unsearched_user = True
@@ -141,12 +143,12 @@ while True:
     # for city_this_loop in city_name_list:
     # first determine for this loop which city user to search
     city_this_loop = random.choice(city_name_list)
-    print('the city of interest for this instance is:', city_this_loop)
+    #print('the city of interest for this instance is:', city_this_loop)
     # ask couchdb for user profile as a dictionary, amount is 15 users
     # (or less if there is no un-searched user left)
     # one item of follower list will be {'id': int, 'rank': int}
 
-    print('start to search for user followers, save their id to db without checking location')
+    #print('start to search for user followers, save their id to db without checking location')
     follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
     while len(follower_search_user_list) > 0:
         user = follower_search_user_list.pop(0)
@@ -186,7 +188,7 @@ while True:
         except couchdb.http.ResourceConflict:
             continue
 
-    print('finish searching for followers, start to extract user time line, 25 users a time')
+    #print('finish searching for followers, start to extract user time line, 25 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
     # one user dic in the list is formatted as: {"id": int, "location": str}
@@ -206,6 +208,11 @@ while True:
             update_timeline_extracted(user_db, user["id"])
         except couchdb.http.ResourceConflict:
             continue
-    print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
+    #print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
 
-    time.sleep(sleep_time)
+
+    time.sleep(SLEEP_TIME)
+
+    check_left = user_db.view(f'check/{instance}', group = True).rows
+    if check_left[0].value == 0:
+        time.sleep(43200)
