@@ -112,7 +112,7 @@ couch = couchdb.Server(login_info)
 user_db = couch[user_db_name]
 twitter_db = couch[twitter_db_name]
 
-#print('start to search for twitters for the first list of user ids using search API')
+print('start to search for twitters for the first list of user ids using search API')
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
 search_tweets_list = []
@@ -143,12 +143,12 @@ while True:
     # for city_this_loop in city_name_list:
     # first determine for this loop which city user to search
     city_this_loop = random.choice(city_name_list)
-    #print('the city of interest for this instance is:', city_this_loop)
+    print('the city of interest for this instance is:', city_this_loop)
     # ask couchdb for user profile as a dictionary, amount is 15 users
     # (or less if there is no un-searched user left)
     # one item of follower list will be {'id': int, 'rank': int}
 
-    #print('start to search for user followers, save their id to db without checking location')
+    print('start to search for user followers, save their id to db without checking location')
     follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
     while len(follower_search_user_list) > 0:
         user = follower_search_user_list.pop(0)
@@ -171,6 +171,7 @@ while True:
                         continue
 
     # ask couch db for user_id that has not confirmed location, amount is 900 users
+    print('start to check the location of followers, 900 a time')
     check_profile_user_list = get_user_from_db(instance, user_db, 'location', SEARCH_LOCATION_A_TIME)
     while len(check_profile_user_list) > 0:
         one_user = check_profile_user_list.pop(0)
@@ -188,7 +189,7 @@ while True:
         except couchdb.http.ResourceConflict:
             continue
 
-    #print('finish searching for followers, start to extract user time line, 25 users a time')
+    print('finish searching for followers, start to extract user time line, 25 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
     # one user dic in the list is formatted as: {"id": int, "location": str}
@@ -208,11 +209,12 @@ while True:
             update_timeline_extracted(user_db, user["id"])
         except couchdb.http.ResourceConflict:
             continue
-    #print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
+    print('finish extracting timeline, save to twitter_db and rest for 900 seconds')
 
 
     time.sleep(SLEEP_TIME)
 
     check_left = user_db.view(f'check/{instance}', group = True).rows
     if check_left[0].value == 0:
-        time.sleep(43200)
+        print('has extracted timeline of all users in the cities, sleep for 3 hours')
+        time.sleep(10800)

@@ -120,7 +120,7 @@ write_view(twitter_db, 'scenario1', scenario1_dic)
 write_view(twitter_db, 'scenario2', scenario2_dic)
 write_view(twitter_db, 'scenario3', scenario3_dic)
 
-"""
+
 # just test to see if the view can produce some result
 print('now print the count of each food mentioned in each city')
 count = twitter_db.view('scenario1/count', group=True)
@@ -146,8 +146,3 @@ print('now print the total number of tweets that mentioned any food words in eac
 food_mentioned = twitter_db.view('scenario2/combine', group=True)
 for row in food_mentioned:
     print(row.key, row.value)
-"""
-
-check_left = user_db.view('check/1', group = True).rows
-
-print(check_left[0].value)
