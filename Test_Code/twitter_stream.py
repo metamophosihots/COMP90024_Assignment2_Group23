@@ -88,8 +88,8 @@ class ProjectStreamListener(tweepy.StreamListener):
 
 
 # bound time could be changed to satisfy demand
-bound_time = datetime.time(23, 0, 0)
-start_time = datetime.time(21, 0, 0)
+bound_time = datetime.time(13, 0, 0)
+start_time = datetime.time(11, 0, 0)
 project_stream_listener = ProjectStreamListener(bound_time)
 project_stream = tweepy.Stream(auth=api.auth, listener=project_stream_listener)
 
@@ -100,7 +100,8 @@ while True:
 
     while datetime.datetime.now().time().__ge__(start_time):
         if datetime.datetime.now().time().__ge__(bound_time):
-            time.sleep(3600)
+            print('sleep until the next day')
+            time.sleep(39600)
         else:
             print('Start streaming of the day, start time is: ', datetime.datetime.now())
             project_stream.filter(track=food_keyword, locations=bounding_box)
@@ -118,6 +119,7 @@ while True:
                             except couchdb.http.ResourceConflict:
                                 continue
             project_stream_listener.clear_tweets_dict()
-            print('Finish streaming and processing, sleep untial the next day.')
-            time.sleep(3600)
+            print('Finish streaming and processing, sleep until the next day.')
+
+    print('current time is', datetime.datetime.now(), ', sleep to wait for 11am utc time')
     time.sleep(3600)

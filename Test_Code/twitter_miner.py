@@ -105,7 +105,10 @@ class TwitterMiner(object):
 
     def get_user_location(self, user_id):
         user = self.api.get_user(user_id=user_id)._json
-        return user['location']
+        location = ''
+        if user['location'] is not None:
+            location = user['location']
+        return location
 
     def time_detail(self, time_string):
         time = datetime.strptime(time_string, '%a %b %d %H:%M:%S %z %Y')
