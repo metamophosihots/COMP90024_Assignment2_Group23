@@ -107,7 +107,6 @@ while True:
                 location = twitter['user']['location']
                 if location is not None:
                     location = location_to_city(location)
-                    print('this user is in', location)
                     if not location == "":
                         user_id = str(twitter['user']['id'])
                         one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
@@ -118,4 +117,5 @@ while True:
                             except couchdb.http.ResourceConflict:
                                 continue
             project_stream_listener.clear_tweets_dict()
-    time.sleep(74700)
+            time.sleep(3600)
+    time.sleep(3600)
