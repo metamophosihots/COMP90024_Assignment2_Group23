@@ -102,6 +102,7 @@ while True:
         if datetime.datetime.now().time().__ge__(bound_time):
             time.sleep(3600)
         else:
+            print('Start streaming of the day, start time is: ', datetime.datetime.now())
             project_stream.filter(track=food_keyword, locations=bounding_box)
             for twitter in project_stream_listener.tweets_list:
                 location = twitter['user']['location']
@@ -117,5 +118,6 @@ while True:
                             except couchdb.http.ResourceConflict:
                                 continue
             project_stream_listener.clear_tweets_dict()
+            print('Finish streaming and processing, sleep untial the next day.')
             time.sleep(3600)
     time.sleep(3600)
