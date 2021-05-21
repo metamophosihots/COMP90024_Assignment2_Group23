@@ -152,7 +152,11 @@ while True:
     follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
     while len(follower_search_user_list) > 0:
         user = follower_search_user_list.pop(0)
-        mined_followers_list = miner.mineUserFollowers(user["id"])
+        mined_followers_list = []
+        try:
+            mined_followers_list = miner.mineUserFollowers(user["id"])
+        except tweepy.error.TweepError:
+            continue
         # after extract his follower, update this user to follower_extracted status
         try:
             update_follower_extracted(user_db, str(user["id"]))
