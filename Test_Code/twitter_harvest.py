@@ -112,6 +112,7 @@ couch = couchdb.Server(login_info)
 user_db = couch[user_db_name]
 twitter_db = couch[twitter_db_name]
 
+
 print('start to search for twitters for the first list of user ids using search API')
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
@@ -135,7 +136,7 @@ for twitter in search_tweets_list:
                     user_db.save(one_user)
                 except couchdb.http.ResourceConflict:
                     continue
-#print('finish search for the original twitters and keep only the users with correct location')
+print('finish search for the original twitters and keep only the users with correct location, start the loop')
 
 # start tweets harvest using author's followers with their timelines
 # unsearched_user = True
@@ -152,7 +153,11 @@ while True:
     follower_search_user_list = get_user_from_db(city_this_loop, user_db, 'follower', SEARCH_FOLLOWER_A_TIME)
     while len(follower_search_user_list) > 0:
         user = follower_search_user_list.pop(0)
-        mined_followers_list = miner.mineUserFollowers(user["id"])
+        mined_followers_list = []
+        try:
+            mined_followers_list = miner.mineUserFollowers(user["id"])
+        except tweepy.error.TweepError:
+            continue
         # after extract his follower, update this user to follower_extracted status
         try:
             update_follower_extracted(user_db, str(user["id"]))
@@ -189,7 +194,7 @@ while True:
         except couchdb.http.ResourceConflict:
             continue
 
-    print('finish searching for followers, start to extract user time line, 25 users a time')
+    print('finish searching for followers, start to extract user time line, 125 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
     # one user dic in the list is formatted as: {"id": int, "location": str}
