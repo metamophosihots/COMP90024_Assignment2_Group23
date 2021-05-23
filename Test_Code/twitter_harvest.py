@@ -112,6 +112,7 @@ couch = couchdb.Server(login_info)
 user_db = couch[user_db_name]
 twitter_db = couch[twitter_db_name]
 
+
 print('start to search for twitters for the first list of user ids using search API')
 # get the original twitters
 # going to change to stream to keep getting twitter and extract user_id
@@ -135,7 +136,7 @@ for twitter in search_tweets_list:
                     user_db.save(one_user)
                 except couchdb.http.ResourceConflict:
                     continue
-#print('finish search for the original twitters and keep only the users with correct location')
+print('finish search for the original twitters and keep only the users with correct location, start the loop')
 
 # start tweets harvest using author's followers with their timelines
 # unsearched_user = True
@@ -193,7 +194,7 @@ while True:
         except couchdb.http.ResourceConflict:
             continue
 
-    print('finish searching for followers, start to extract user time line, 25 users a time')
+    print('finish searching for followers, start to extract user time line, 125 users a time')
     # ask couchdb for user profile as a dictionary, amount is 125 users
     # max pages for timeline search is 8 pages
     # one user dic in the list is formatted as: {"id": int, "location": str}
