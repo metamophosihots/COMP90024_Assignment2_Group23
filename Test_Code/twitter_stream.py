@@ -8,6 +8,7 @@ import couchdb
 
 # transfer user location to one of the cities in interest
 # if use is not in the city list, return empty string
+import urllib3.exceptions
 
 
 def location_to_city(user_location):
@@ -99,27 +100,31 @@ instance = config['instance']
 while True:
 
     while datetime.datetime.now().time().__ge__(start_time):
-        if datetime.datetime.now().time().__ge__(bound_time):
-            print('sleep until the next day')
-            time.sleep(39600)
-        else:
-            print('Start streaming of the day, start time is: ', datetime.datetime.now())
-            project_stream.filter(track=food_keyword, locations=bounding_box)
-            for twitter in project_stream_listener.tweets_list:
-                location = twitter['user']['location']
-                if location is not None:
-                    location = location_to_city(location)
-                    if not location == "":
-                        user_id = str(twitter['user']['id'])
-                        one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
-                                    "follower_extracted": "0", "instance": instance, 'rank': '0'}
-                        if user_id not in user_db:
-                            try:
-                                user_db.save(one_user)
-                            except couchdb.http.ResourceConflict:
-                                continue
-            project_stream_listener.clear_tweets_dict()
-            print('Finish streaming and processing, sleep until the next day.')
+        try:
+            if datetime.datetime.now().time().__ge__(bound_time):
+                print('sleep until the next day')
+                time.sleep(39600)
+            else:
+                print('Start streaming of the day, start time is: ', datetime.datetime.now())
+                project_stream.filter(track=food_keyword, locations=bounding_box)
+                for twitter in project_stream_listener.tweets_list:
+                    location = twitter['user']['location']
+                    if location is not None:
+                        location = location_to_city(location)
+                        if not location == "":
+                            user_id = str(twitter['user']['id'])
+                            one_user = {'_id': user_id, 'location': location, 'timeline_extracted': '0',
+                                        "follower_extracted": "0", "instance": instance, 'rank': '0'}
+                            if user_id not in user_db:
+                                try:
+                                    user_db.save(one_user)
+                                except couchdb.http.ResourceConflict:
+                                    continue
+                project_stream_listener.clear_tweets_dict()
+                print('Finish streaming and processing, sleep until the next day.')
+        except urllib3.exceptions.ProtocolError:
+            time.sleep(600)
+            continue
 
     print('current time is', datetime.datetime.now(), ', sleep to wait for 11am utc time')
     time.sleep(3600)
