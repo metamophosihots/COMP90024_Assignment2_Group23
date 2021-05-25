@@ -7,7 +7,8 @@
 # Test Data
     There is some data used to test during programming.
     
-# Test Code
+# Website deploymet guide
+[https://github.com/metamophosihots/COMP90024_Assignment2_Group23/tree/main/Front_end/front-end-deploy-file](https://github.com/metamophosihots/COMP90024_Assignment2_Group23/tree/main/Front_end/front-end-deploy-file)
 
 # Website User Guide
 
