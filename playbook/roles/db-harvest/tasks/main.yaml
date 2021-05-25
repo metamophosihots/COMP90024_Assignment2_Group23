@@ -1,0 +1,34 @@
+---
+- name: git clone
+  become: yes
+  shell: git clone https://github.com/irissong49/ccc_deploy.git
+  
+- name: Install dependencies
+  become: yes
+  pip:
+    name:
+      - tweepy
+      - textblob
+      - datetime
+      - couchdb
+    state: latest
+
+#comment next task if not master node
+- name: master db code
+  become: yes
+  shell: |
+    cd /home/ubuntu/ccc_deploy/Test_Code
+    python3 couchdb_views.py
+
+#select config for different nodes  
+- name: deploy harvest
+  become: yes
+  shell: |
+    cd /home/ubuntu/ccc_deploy/Test_Code
+    mv config_harvest_0.json config_harvest.json
+    rm config_harvest_1.json
+    rm config_harvest_2.json
+    nohup python3 -u twitter_harvest.py  > harvest.log &
+    nohup python3 -u twitter_stream.py  > stream.log &
+
+

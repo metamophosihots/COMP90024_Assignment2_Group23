@@ -1,0 +1,90 @@
+- name: Add Docker apt key.
+  apt_key:
+    url: "{{ docker_apt_gpg_key }}"
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    state: present
+  register: add_repository_key
+  ignore_errors: "{{ docker_apt_ignore_key_error }}"
+
+- name: Ensure curl is present (on older systems without SNI).
+  package: name=curl state=present
+  when: add_repository_key is failed
+
+- name: Add Docker apt key (alternative for older systems without SNI).
+  shell: >
+    curl -sSL {{ docker_apt_gpg_key }} | sudo apt-key add -
+  args:
+    warn: false
+  when: add_repository_key is failed
+
+- name: Add Docker repository.
+  become: yes
+  apt_repository:
+    repo: "{{ docker_apt_repository }}"
+    state: present
+    update_cache: true
+
+- name: Install Docker.
+  become: yes
+  package:
+    name: docker-ce
+    state: present
+
+- name: Create systemd directory
+  tags: 'systemd'
+  become: yes
+  file:
+    path: /etc/systemd/system/docker.service.d
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    recurse: yes
+    state: directory
+    
+- name: Setup docker proxy
+  tags: always
+  become: yes
+  shell: |
+    echo '[Service]
+    Environment="HTTP_PROXY=http://wwwproxy.unimelb.edu.au:8000/"
+    Environment="HTTPS_PROXY=http://wwwproxy.unimelb.edu.au:8000/"
+    Environment="http_proxy=http://wwwproxy.unimelb.edu.au:8000/"
+    Environment="https_proxy=http://wwwproxy.unimelb.edu.au:8000/"
+    Environment="no_proxy=localhost,127.0.0.1,localaddress,172.16.0.0/12,.melbourne.rc.nectar.org.au,.storage.unimelb.edu.au,.cloud.unimelb.edu.au"' >> /etc/systemd/system/docker.service.d/http-proxy.conf
+
+- name: Reload daemon
+  become: yes
+  shell: systemctl daemon-reload
+  
+- name: Restart docker
+  become: yes
+  shell: systemctl restart docker
+  
+- name: Ensure Docker is started and enabled.
+  service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Install Docker Compose (if configured).
+  become: yes
+  get_url:
+    url: "{{ docker_compose_url }}"
+    dest: "{{ docker_compose_path }}"
+    mode: 0755
+
+- name: Ensure docker users are added to the docker group.
+  become: yes
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  with_items: "{{ docker_users }}"
+
+- name: Pip install docker
+  become: yes
+  pip:
+    name:
+      - docker
+      - docker-compose
+    state: latest

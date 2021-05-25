@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  couchdb:
+    image: ibmcom/couchdb3:{{ VERSION }}
+    container_name: couchdb{{ansible_default_ipv4['address']}}
+    restart: always
+    ports:
+      - 5984:5984
+      - 4369:4369
+      - 9100-9200:9100-9200
+    environment:
+      COUCHDB_USER: {{ user }}
+      COUCHDB_PASSWORD: {{ pass }}
+      COUCHDB_SECRET: {{ cookie }}
+      ERL_FLAGS: -setcookie {{ cookie }} -name couchdb@{{ansible_default_ipv4['address']}}

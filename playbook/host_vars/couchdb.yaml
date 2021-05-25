@@ -1,0 +1,14 @@
+---
+volumes:
+  - device: /dev/vdb
+    mountpoint: /var/lib/docker
+  - device: /dev/vdc
+    mountpoint: /data
+ 
+dbdir: couchdb
+
+masternode: 172.26.128.24
+user: 'admin'
+pass: 'admin'
+VERSION: '3.1.1'
+cookie: 'a192aeb9904e6590849337933b000c99'

@@ -1,0 +1,35 @@
+---
+- name: Gather facts of remote
+  setup: 
+    gather_subset: all
+
+# Setup proxy
+- name: Setup proxy
+  tags: always
+  become: yes
+  shell: |
+    echo 'HTTP_PROXY=http://wwwproxy.unimelb.edu.au:8000/
+    HTTPS_PROXY=http://wwwproxy.unimelb.edu.au:8000/
+    http_proxy=http://wwwproxy.unimelb.edu.au:8000/
+    https_proxy=http://wwwproxy.unimelb.edu.au:8000/
+    no_proxy=localhost,127.0.0.1,localaddress,172.16.0.0/12,.melbourne.rc.nectar.org.au,.storage.unimelb.edu.au,.cloud.unimelb.edu.au' >> /etc/environment
+
+# Install dependencies
+- name: Install dependencies
+  tags: always
+  become: yes
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - python3-pip
+    state: latest
+    install_recommends: no
+    update_cache: yes
+
+- name: Update pip
+  pip:
+    name: ['pip']
+    state: latest
+# pip install --upgrade pip

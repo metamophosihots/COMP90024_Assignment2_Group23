@@ -1,0 +1,22 @@
+---
+- name: cluster setup on slave nodes
+  shell: |
+    curl -XPOST "http://{{user}}:{{pass}}@{{masternode}}:5984/_cluster_setup" \
+      --header "Content-Type: application/json"\
+      --data "{\"action\": \"enable_cluster\", \"bind_address\":\"0.0.0.0\",\
+             \"username\": \"{{user}}\", \"password\":\"{{pass}}\", \"port\": \"5984\",\
+             \"remote_node\": \"{{ansible_default_ipv4['address']}}\", \"node_count\": \"4\",\
+             \"remote_current_user\":\"{{user}}\", \"remote_current_password\":\"{{pass}}\"}"
+    curl -XPOST "http://{{user}}:{{pass}}@{{masternode}}:5984/_cluster_setup"\
+      --header "Content-Type: application/json"\
+      --data "{\"action\": \"add_node\", \"host\":\"{{ansible_default_ipv4['address']}}\",\
+             \"port\": \"5984\", \"username\": \"{{user}}\", \"password\":\"{{pass}}\"}"
+             
+- name: get master node
+  shell: curl -XGET "http://{{user}}:{{pass}}@{{masternode}}:5984/"
+
+  
+- name: cluster setup on master node 
+  shell: |
+    curl -XPOST "http://{{user}}:{{pass}}@{{masternode}}:5984/_cluster_setup" --header "Content-Type: application/json" --data "{\"action\": \"finish_cluster\"}"
+  

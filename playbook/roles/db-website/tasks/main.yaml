@@ -1,0 +1,44 @@
+---
+- name: cors
+  shell: |
+    curl -XPUT "http://{{user}}:{{pass}}@{{ansible_default_ipv4['address']}}:5984/_config/httpd/enable_cors" -d '"true"'
+    curl -XPUT "http://{{user}}:{{pass}}@{{ansible_default_ipv4['address']}}:5984/_config/cors/origins" -d '"*"'
+  
+- name: Install dependencies
+  tags: always
+  become: yes
+  apt:
+    name:
+      - npm
+    state: latest
+    install_recommends: no
+    update_cache: yes
+
+- name: prepare install nodejs
+  shell: |
+    cd /home/ubuntu/ccc_deploy/Front_end/front-end-deploy-file
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+  
+- name: install nodejs
+  tags: always
+  become: yes
+  apt:
+    name:
+      - nodejs
+    state: latest
+    install_recommends: no
+    update_cache: yes
+  
+- name: npm install
+  shell: 
+    cd /home/ubuntu/ccc_deploy/Front_end/front-end-deploy-file/dashboard
+    npm install
+
+- name: npm install express
+  shell: |
+    cd /home/ubuntu/ccc_deploy/Front_end/front-end-deploy-file/server
+    sudo npm install express
+
+- name: run nodejs
+  shell: node server.js
+
