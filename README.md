@@ -46,7 +46,8 @@ This is a functionality for Component 1, by setting different dates for start or
 ### 4. Chart switcher
 By clicking them, they can switch chart components to different charts which represent different data and scenarios.
 ### 5. Search bar
-This is designed for “By cuisine” charts of Component 3, by searching different food names and clicking them, those foods data will show in the chart and their names with a red cross button will show below the search bar.  
+This is designed for “By cuisine” charts of Component 3, by searching different food names and clicking them, those foods data will show in the chart and their names with a red cross button will show below the search bar. 
+
 Below are 2 snapshots of the same charts with different measures, they can be switched by the bottom rightmost button (“count” means switch to count measure, “polarity” means switch to polarity measures). By clicking the red cross button next to the food name, it will eliminate corresponding food from the chart. By clicking clear, all food names will be eliminated from the search bar and chart.
 
 ![https://github.com/metamophosihots/COMP90024_Assignment2_Group23/blob/main/](search_bar1.png)
