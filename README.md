@@ -32,11 +32,17 @@ This is a new page which includes the description of this website.
 
 ## Functionalties in ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Square:
 ### 1. Menu Bar
-Click different buttons to lead to different components.
+Click different buttons to navigate to different components.\
+Home - Shows this snapshot\
+About - Shows Component 5\
+Food Wiki - Shows Component 4\
+Time Chart - Shows Component 1, bigger version\
+Food Chart - Shows Component 3, bigger version
+
 ### 2. Legends for charts
-Click each label to eliminate from the chart or show it on the chart.
+Click each label to eliminate from the chart or show it on the chart if it is eliminated.
 ### 3. Date Range picker
-This is a functionality for Component 1, by setting different dates for start or end date, the chart will dynamically update horizontal time axis and the data.
+This is a functionality for Component 1, by setting different dates for start or end date, the chart will dynamically update horizontal time axis and the corresponding data.
 ### 4. Chart switcher
 By clicking them, they can switch chart components to different charts which represent different data and scenarios.
 ### 5. Search bar
