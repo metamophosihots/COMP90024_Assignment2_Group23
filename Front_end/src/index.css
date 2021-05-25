@@ -1,54 +1,324 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+div.a {
+  font-size: 30px;
 }
 
-#element1 {
-  display: inline-block;
-  width: 45%;
+p.text {
+  margin-left: 2%;
+}
+
+p.end {
+  text-align: right;
+  font-size: large;
+  font-weight: bold;
+}
+
+div.header {
+  font-size: 30px;
+  text-align: center;
+}
+
+div.scroll {
+  overflow-y: scroll;
   padding: 10px;
+  height: 600px;
 }
-#element2 {
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #58c;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+td {
+  text-align: center;
+}
+
+th.a {
+  text-align: center;
+}
+
+ul {
+  font-size: 14px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 34% 34% 30%;
+  grid-template-rows: 40px 400px 40%;
+  gap: 20px 10px;
+  grid-template-areas:
+    "header header header"
+    "chart1 chart1 leader"
+    "chart2 chart2 leader";
+}
+
+.grid-container2 {
+  display: grid;
+  grid-template-columns: 98%;
+  grid-template-rows: 40px 680px;
+  gap: 20px 10px;
+  grid-template-areas:
+    "menu"
+    "chart1";
+}
+
+.grid-container3 {
+  display: grid;
+  grid-template-columns: 98%;
+  grid-template-rows: 40px 680px;
+  gap: 20px 10px;
+  grid-template-areas:
+    "menu"
+    "chart2";
+}
+
+.leader {
+  grid-area: leader;
+  height: 900px;
+}
+
+.grid-header {
+  grid-area: header;
+}
+
+.menu {
+  background-color: #58c;
   display: inline-block;
-  width: 45%;
-  padding: 10px;
+  width: 1300px;
+  height: 100%;
 }
 
-.navigator {
-  max-width: 100px;
-  margin-top: 60px;
-  margin-left: 100px;
-  overflow: auto;
-  min-height: 700px;
-  border: 1px solid steelblue;
-  padding: 30px;
-  align-items: right;
-  border-radius: 5px;
+.chart1 {
+  grid-area: chart1;
+  padding-bottom: 40px;
+  padding-right: 5px;
+  margin-left: 5px;
+  width: 100%;
+  height: 100%;
 }
 
-.chart-container {
-  max-width: 600px;
-  min-height: 300px;
-  max-height: 300px;
+.chart2 {
+  grid-area: chart2;
+  display: grid;
+  grid-template-columns: 80% 20%;
+  grid-template-rows: 100%;
+  grid-template-areas: "chart bar";
+  border: 3px solid steelblue;
+  border-radius: 10px;
+  padding-bottom: 40px;
+  margin-left: 5px;
+  height: 500px;
+  width: 100%;
 }
 
-.container {
-  max-width: 600px;
-  margin-top: 60px;
-  margin-left: 200px;
-  overflow: auto;
-  min-height: 700px;
-  border: 1px solid steelblue;
-  padding: 30px;
-  align-items: right;
-  border-radius: 5px;
+.chart {
+  grid-area: chart;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+.bar {
+  grid-area: bar;
+  padding: 5px 5px 10px 5px;
+}
+
+.button {
+  backface-visibility: hidden;
+  cursor: pointer;
+  display: inline-block;
+  white-space: nowrap;
+  background: #58c;
+  border-radius: 0px;
+  border: 0px solid #246;
+  border-width: 0px 0px 4px 0px;
+  padding: 10px 20px 5px 5px;
+  color: #fff;
+  font-size: initial;
+  font-family: Helvetica Neue;
+  font-weight: 900;
+  font-style: normal;
+  margin-left: 10px;
+  width: 10%;
+}
+.button:hover {
+  color: black;
+}
+
+.myButton2 {
+  box-shadow: inset 0px 1px 0px 0px #dcecfb;
+  background: linear-gradient(to bottom, #80b5ea 5%, #58c 100%);
+  background-color: #58c;
+  border-radius: 6px;
+  border: 1px solid #84bbf3;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 6px 24px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #528ecc;
+  width: 60%;
+  margin-top: 5px;
+  margin-left: 20%;
+  margin-right: 20%;
+}
+
+.myButton {
+  box-shadow: inset 0px 1px 0px 0px #dcecfb;
+  background: linear-gradient(to bottom, #80b5ea 5%, #58c 100%);
+  background-color: #58c;
+  border-radius: 6px;
+  border: 1px solid #84bbf3;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 6px 24px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #528ecc;
+  width: 25%;
+  margin-top: 5px;
+  margin-left: 5%;
+}
+
+.myButton3 {
+  box-shadow: inset 0px 1px 0px 0px #dcecfb;
+  background: linear-gradient(to bottom, #80b5ea 5%, #58c 100%);
+  background-color: #58c;
+  border-radius: 6px;
+  border: 1px solid #84bbf3;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 6px 24px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #528ecc;
+  width: 15%;
+  margin-left: 5%;
+  margin-top: 5px;
+}
+.myButton:hover {
+  background: linear-gradient(to bottom, #80b5ea 5%, #bddbfa 100%);
+  background-color: #80b5ea;
+}
+.myButton:active {
+  position: relative;
+  top: 1px;
+}
+
+.wiki-container {
+  display: grid;
+  grid-template-columns: 20% 20% 20% 20% 18%;
+  grid-template-rows: 40px 200px 200px;
+  gap: 20px 5px;
+  grid-template-areas:
+    "header header header header header"
+    "b c d f h"
+    "k l p r s"
+    "img1 img1 img1 img2 img2";
+}
+
+.round-boarder {
+  border: 3px solid steelblue;
+  border-radius: 10px;
+}
+
+.wiki-header {
+  grid-area: header;
+}
+
+.b {
+  margin-left: 5px;
+  grid-area: b;
+}
+.img1 {
+  grid-area: img1;
+  width: 100%;
+  height: 100%;
+}
+.img2 {
+  grid-area: img2;
+  width: 100%;
+  height: 100%;
+}
+
+.c {
+  grid-area: c;
+}
+
+.d {
+  grid-area: d;
+}
+
+.f {
+  grid-area: f;
+}
+
+.h {
+  grid-area: h;
+}
+
+.k {
+  margin-left: 5px;
+  grid-area: k;
+}
+
+.l {
+  grid-area: l;
+}
+
+.p {
+  grid-area: p;
+}
+
+.r {
+  grid-area: r;
+}
+
+.s {
+  grid-area: s;
+}
+
+.food-container {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: 40px 500px;
+  gap: 20px 20px;
+}
+
+.t {
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+.header {
+  grid-area: 1 / 1 / 2 / 3;
+  width: 100%;
+}
+
+.photo {
+  grid-area: 2 / 1 / 3 / 2;
+  width: 90%;
+  height: 90%;
+  padding: 5px 5px 5px 5px;
+}
+
+.text {
+  grid-area: 2 / 2 / 3 / 3;
+  text-align: left;
+  font-size: 20px;
 }
