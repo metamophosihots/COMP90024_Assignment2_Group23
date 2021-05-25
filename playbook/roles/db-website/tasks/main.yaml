@@ -30,7 +30,7 @@
     update_cache: yes
   
 - name: npm install
-  shell: 
+  shell: |
     cd /home/ubuntu/ccc_deploy/Front_end/front-end-deploy-file/dashboard
     npm install
 
@@ -40,5 +40,8 @@
     sudo npm install express
 
 - name: run nodejs
-  shell: node server.js
+  shell: |
+    sudo npm install -g pm2
+    cd /home/ubuntu/ccc_deploy/Front_end/front-end-deploy-file/server
+    pm2 start server.js
 
