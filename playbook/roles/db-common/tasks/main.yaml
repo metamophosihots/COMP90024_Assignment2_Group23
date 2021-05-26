@@ -33,3 +33,7 @@
     name: ['pip']
     state: latest
 # pip install --upgrade pip
+
+- name: git clone
+  become: yes
+  shell: git clone https://github.com/irissong49/ccc_deploy.git
